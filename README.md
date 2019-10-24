@@ -1,1 +1,1 @@
-# snort
+# Snort - URL shortening service
