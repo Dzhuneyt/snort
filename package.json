@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "docker-compose up --build",
     "port": "echo http://$(docker-compose port nginx 80)",
-    "migrations": "docker-compose exec php php artisan migrate"
+    "migrations": "docker-compose exec php php artisan migrate",
+    "frontend:serve": "cd ./services/vue && npm run serve"
   },
   "repository": {
     "type": "git",
