@@ -10,6 +10,8 @@
 </template>
 
 <script>
+    import axios from 'axios';
+
     export default {
         name: 'HelloWorld',
         props: {
@@ -17,10 +19,19 @@
         },
         data: () => ({
             url: '',
+            encrypted: '',
         }),
         methods: {
-            shorten: () => {
-                debugger;
+            // eslint-disable-next-line no-unused-vars
+            shorten: function (el) {
+                axios
+                    .post('http://0.0.0.0:8081/api/link', {
+                        url: this.url
+                    })
+                    .then(response => {
+                        response
+                        debugger;
+                    });
             }
         }
     }
