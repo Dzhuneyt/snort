@@ -1,0 +1,22 @@
+{
+  "name": "snort",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "docker-compose up --build",
+    "port": "echo http://$(docker-compose port nginx 80)",
+    "migrations": "docker-compose exec php php artisan migrate"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dzhuneyt/snort.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dzhuneyt/snort/issues"
+  },
+  "homepage": "https://github.com/Dzhuneyt/snort#readme"
+}
