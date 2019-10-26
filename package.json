@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "docker-compose up --build",
+    "dev": "docker-compose up --build --force-recreate",
     "port": "echo http://$(docker-compose port nginx 80)",
     "migrations": "docker-compose exec php php artisan migrate",
     "frontend:serve": "cd ./services/vue && npm run serve"
