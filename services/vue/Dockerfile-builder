@@ -1,0 +1,11 @@
+FROM node:lts-alpine
+
+WORKDIR /app
+
+ARG env
+# Make it available inside CMD
+ENV env=$env
+
+RUN echo "Building in $env mode"
+
+CMD npm run build:$env

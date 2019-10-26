@@ -1,11 +1,13 @@
 <template>
     <div class="hello">
-        <h1>{{ msg }}</h1>
+        <h1>Snort - URL shortening service</h1>
         <md-field>
             <label>URL here</label>
             <md-input v-model="url"></md-input>
             <md-button v-on:click="shorten" class="md-dense md-raised md-primary">Shorten</md-button>
         </md-field>
+
+        <div v-if="hashed_url !== ''">{{hashed_url}}</div>
     </div>
 </template>
 
@@ -13,24 +15,24 @@
     import axios from 'axios';
 
     export default {
-        name: 'HelloWorld',
-        props: {
-            msg: String
-        },
+        name: 'Form',
+        props: {},
         data: () => ({
             url: '',
+            hashed_url: '',
             encrypted: '',
         }),
         methods: {
-            // eslint-disable-next-line no-unused-vars
-            shorten: function (el) {
+            shorten() {
                 axios
                     .post('http://0.0.0.0:8081/api/link', {
+                        // Try to get a component data variable
                         url: this.url
                     })
-                    .then(response => {
-                        response
-                        debugger;
+                    .then((res) => {
+                        const hash = res.data.hash;
+                        this.hashed_url = 'http://localhost:8080/' + hash;
+                        // Do something with the response
                     });
             }
         }
@@ -42,23 +44,5 @@
     .hello {
         width: 700px;
         margin: auto;
-    }
-
-    h3 {
-        margin: 40px 0 0;
-    }
-
-    ul {
-        list-style-type: none;
-        padding: 0;
-    }
-
-    li {
-        display: inline-block;
-        margin: 0 10px;
-    }
-
-    a {
-        color: #42b983;
     }
 </style>

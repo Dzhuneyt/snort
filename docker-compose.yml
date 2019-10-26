@@ -36,3 +36,22 @@ services:
       - APACHE_RUN_GROUP=#1000
     ports:
       - "5000"
+
+  frontend_builder:
+    user: "1000"
+    build:
+      args:
+        - env=${BUILD_ENV:-development}
+      context: ./services/vue
+      dockerfile: Dockerfile-builder
+    volumes:
+      - ./services/vue:/app
+
+  frontend_serve:
+    build:
+      context: ./services/vue
+      dockerfile: Dockerfile-serve
+    volumes:
+      - ./services/vue:/app
+    ports:
+      - 8082:8080
