@@ -25,7 +25,10 @@ Vue.use(VueRouter);
 // We'll talk about nested routes later.
 const routes = [
     {path: '/', component: Form},
-    {path: '/:hash', component: VisitedLink}
+    {
+        name: 'visitlink',
+        path: '/:hash', component: VisitedLink
+    }
 ];
 
 // 3. Create the router instance and pass the `routes` option

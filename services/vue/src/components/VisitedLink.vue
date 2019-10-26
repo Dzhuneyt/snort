@@ -12,10 +12,9 @@
             const hash = this.$route.params.hash;
 
             axios
-                .get('http://0.0.0.0:8081/api/link/' + hash)
+                .get(process.env.VUE_APP_BACKEND + '/api/link/' + hash)
                 .then((res) => {
                     // Do something with the response
-                    console.log(res)
                     window.location = res.data.url;
                 });
         }
