@@ -4,7 +4,7 @@ data "aws_ami" "ubuntu" {
   filter {
     name = "name"
     values = [
-      "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
+      "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
   }
 
   filter {
@@ -19,11 +19,11 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_instance" "web" {
+  subnet_id = module.vpc.public_subnets[0]
   ami = data.aws_ami.ubuntu.id
-  instance_type = "t3a.nano"
+  instance_type = "t3a.small"
   vpc_security_group_ids = [
-    module.http_80_security_group.this_security_group_id,
-    module.ssh_security_group.this_security_group_id,
+    aws_security_group.snort_ec2_instance.id,
   ]
   key_name = "Dell G5 Ubuntu"
   user_data = <<EOF
@@ -37,7 +37,12 @@ else
 fi
 
 sudo apt-get update
-sudo apt-get install -y git
+sudo apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    git curl \
+    gnupg-agent \
+    software-properties-common
 
 ##
 ## Setup SSH Config
@@ -50,21 +55,25 @@ touch /home/$SSH_USER/.ssh/config
 chmod 600 /home/$SSH_USER/.ssh/config
 chown $SSH_USER:$SSH_USER /home/$SSH_USER/.ssh/config
 
-# Add the deploy keys to this server
-echo "${file("./deploy_keys/snort")}" > /home/$SSH_USER/.ssh/id_rsa
-chmod 600 /home/$SSH_USER/.ssh/id_rsa
+echo Cloning Snort
+git clone --verbose https://github.com/Dzhuneyt/snort.git /app
 
-cat /home/$SSH_USER/.ssh/id_rsa
-
-# Start SSH agent and add the new key
-eval "$(ssh-agent -s)"
-ssh-add /home/$SSH_USER/.ssh/id_rsa
-
-mkdir /app
-ssh-agent bash -c 'ssh-add /home/ubuntu/.ssh/id_rsa; git clone git@github.com:Dzhuneyt/snort.git'
-
-#git clone --verbose git@github.com:Dzhuneyt/snort.git /app
+echo NGINX_PORT=80 >> /app/.env
+echo BUILD_ENV=production >> /app/.env
 ls /app
+cat /app/.env
+
+echo Installing Docker
+
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+echo Installing Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+cd /app && docker-compose up -d && docker-compose logs -f
+
 EOF
 
   tags = {
@@ -72,35 +81,7 @@ EOF
   }
 }
 data "aws_vpc" "selected" {
-  id = "vpc-00600b553bbc46113"
-}
-module "http_80_security_group" {
-  source = "terraform-aws-modules/security-group/aws//modules/http-80"
-  version = "~> 3.0"
-
-  # omitted...
-  name = "Allow HTTP traffic to Snort EC2 instance"
-  vpc_id = data.aws_vpc.selected.id
-  ingress_cidr_blocks = [
-    "0.0.0.0/0"
-  ]
-  egress_cidr_blocks = [
-    "0.0.0.0/0"
-  ]
-}
-module "ssh_security_group" {
-  source = "terraform-aws-modules/security-group/aws//modules/ssh"
-  version = "~> 3.0"
-
-  # omitted...
-  name = "Allow SSH traffic to Snort EC2 instance"
-  vpc_id = data.aws_vpc.selected.id
-  ingress_cidr_blocks = [
-    "0.0.0.0/0"
-  ]
-  egress_cidr_blocks = [
-    "0.0.0.0/0"
-  ]
+  id = module.vpc.vpc_id
 }
 
 //resource "aws_eip" "this" {
