@@ -5,8 +5,8 @@
   "scripts": {
     "serve": "npx vue-cli-service serve",
     "build": "npx vue-cli-service build",
-    "build:development": "npx vue-cli-service build --watch --mode=development",
-    "build:production": "npx vue-cli-service build --mode=production",
+    "build:development": "npm i --no-audit && vue-cli-service build --watch --mode=development",
+    "build:production": "npm i --no-audit && vue-cli-service build --mode=production",
     "lint": "npx vue-cli-service lint",
     "env": "echo $env"
   },
