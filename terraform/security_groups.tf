@@ -6,7 +6,10 @@ resource "aws_security_group_rule" "ssh_in" {
   from_port = 22
   to_port = 22
   cidr_blocks = [
-    "62.73.85.179/32"
+    # Home
+    "62.73.85.179/32",
+    # Office
+    "213.16.62.225/32",
   ]
   protocol = "tcp"
   security_group_id = aws_security_group.snort_ec2_instance.id
