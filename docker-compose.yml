@@ -30,6 +30,8 @@ services:
       context: ./services/laravel
     volumes:
       - ./services/laravel:/var/www
+    env_file:
+      - ./services/laravel/.env.example
     environment:
       - PORT=5000
       - APACHE_RUN_USER=#1000
