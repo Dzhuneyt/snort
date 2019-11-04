@@ -38,7 +38,7 @@ services:
       - "5000"
 
   frontend_builder:
-    user: "1000"
+    user: ${UID}
     build:
       args:
         - env=${BUILD_ENV:-development}

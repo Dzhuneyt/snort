@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "docker-compose up --build --force-recreate",
+    "dev": "UID=$(id -u):$(id -g) docker-compose build --parallel && UID=$(id -u):$(id -g) docker-compose up --force-recreate",
     "port": "echo http://$(docker-compose port nginx 80)",
     "migrations": "docker-compose exec php php artisan migrate"
   },
