@@ -1,3 +1,6 @@
+locals {
+  allocation_id = aws_eip.this.allocation_id
+}
 resource "aws_instance" "web" {
   subnet_id = module.vpc.public_subnets[0]
   ami = data.aws_ami.ubuntu.id
@@ -6,15 +9,10 @@ resource "aws_instance" "web" {
     aws_security_group.snort_ec2_instance.id,
   ]
   key_name = var.ssh_key_name
-  user_data = <<EOF
+  user_data = <<-EOF
 #! /bin/bash
 
-if [ "$(. /etc/os-release; echo $NAME)" = "Ubuntu" ]; then
-  apt-get update
-  SSH_USER=ubuntu
-else
-  SSH_USER=ec2-user
-fi
+SSH_USER=ubuntu
 
 sudo apt-get install -y \
     apt-transport-https \
@@ -50,11 +48,18 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 cd /app && docker-compose up -d
 
+# Associate elastic IP with this instance
+#INSTANCE_ID=`/usr/bin/curl -s http://169.254.169.254/latest/meta-data/instance-id`
+#aws ec2 associate-address --instance-id $INSTANCE_ID --allocation-id ${local.allocation_id} --allow-reassociation
+
 EOF
 
   tags = {
     Name = "snort"
   }
+  depends_on = [
+    aws_eip.this
+  ]
 }
 data "aws_vpc" "selected" {
   id = module.vpc.vpc_id
