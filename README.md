@@ -2,8 +2,13 @@
 
 ## Demo
 
+TBD
 
+## Requirements
+* Docker & Docker Compose
+* NodeJS + NPM
 
 ## Getting started
-1. Copy .env.dist to .env and change the NGINX port (optional). By default it's 8081
-
+1. Copy .env.dist to .env
+2. `npm run dev` to start the stack of containers
+3. Open http://localhost:8081
