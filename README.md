@@ -1,5 +1,7 @@
 # Snort - URL shortening service
 
+![](https://github.com/Dzhuneyt/snort/workflows/CI/badge.svg)
+
 ## Demo
 
 ![Screenshot](docs/assets/screenshot.png)

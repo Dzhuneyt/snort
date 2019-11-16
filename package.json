@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "UID=$(id -u):$(id -g) docker-compose build --parallel && UID=$(id -u):$(id -g) docker-compose up --force-recreate",
+    "dev": "npm run build && uid=$(id -u):$(id -g) docker-compose up --force-recreate",
     "port": "echo http://$(docker-compose port nginx 80)",
-    "migrations": "docker-compose exec php php artisan migrate"
+    "migrations": "docker-compose exec php php artisan migrate",
+    "build": "uid=$(id -u):$(id -g) docker-compose build --parallel"
   },
   "repository": {
     "type": "git",
