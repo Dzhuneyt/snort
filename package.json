@@ -5,9 +5,13 @@
   "main": "index.js",
   "scripts": {
     "dev": "npm run build && uid=$(id -u):$(id -g) docker-compose up --force-recreate",
-    "port": "echo http://$(docker-compose port nginx 80)",
+    "prod:TMP": "npm run frontend:build:prod && npm run build",
+    "prod": "npm run build",
     "migrations": "docker-compose exec php php artisan migrate",
-    "build": "uid=$(id -u):$(id -g) docker-compose build --parallel"
+    "build": "uid=$(id -u):$(id -g) docker-compose build --parallel",
+    "frontend:build:dev": "cd ./services/vue && docker build -t snort_builder -f Dockerfile-builder . && docker run --env env=development -v $(pwd):/app --user $(id -u) --rm snort_builder",
+    "frontend:build:prod": "cd ./services/vue && docker build -t snort_builder -f Dockerfile-builder . && docker run --env env=production -v $(pwd):/app --user $(id -u) --rm snort_builder",
+    "util:docker-compose-push": "docker-compose push"
   },
   "repository": {
     "type": "git",

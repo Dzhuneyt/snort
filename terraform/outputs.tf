@@ -1,6 +1,6 @@
-output "ec2_ip" {
-  value = aws_eip.this.public_dns
+output "ecr_backend" {
+  value = aws_ecr_repository.backend.repository_url
 }
-output "nameservers" {
-  value = aws_route53_delegation_set.this.name_servers
+output "ecr_frontend" {
+  value = aws_ecr_repository.frontend.repository_url
 }

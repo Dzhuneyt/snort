@@ -1,0 +1,12 @@
+FROM nginx:stable-alpine
+
+WORKDIR /app
+
+ADD nginx.conf /etc/nginx/
+
+RUN chmod 777 -R /var/cache
+RUN chmod 777 -R /var/log/nginx
+
+COPY ./dist /app/dist
+
+EXPOSE 80

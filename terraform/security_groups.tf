@@ -1,6 +1,6 @@
 resource "aws_security_group" "snort_ec2_instance" {
   name = "EC2 instance of snort"
-  vpc_id = data.aws_vpc.selected.id
+  vpc_id = module.vpc.vpc_id
 }
 resource "aws_security_group_rule" "ssh_in" {
   from_port = 22
