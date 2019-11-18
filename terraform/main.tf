@@ -1,11 +1,3 @@
-module "ec2-profile" {
-  source = "./ecs-instance-profile"
-  name = "snort-instance-profile"
-  providers = {
-    aws = aws
-  }
-}
-
 locals {
   name = "complete-ecs"
   environment = "dev"
@@ -13,6 +5,7 @@ locals {
   # This is the convention we use to know what belongs to each other
   ec2_resources_name = "${local.name}-${local.environment}"
 }
+
 module "ecs-cluster" {
   source = "github.com/Dzhuneyt/terraform-module-aws-ecs-cluster?ref=v1.0.6"
 

@@ -21,6 +21,8 @@ RUN usermod -u 1000 www-data
 RUN wget https://raw.githubusercontent.com/composer/getcomposer.org/76a7060ccb93902cd7576b67264ad91c8a2700e2/web/installer -O - -q | php -- --silent && \
     mv composer.phar /usr/local/bin/composer
 
+COPY cmd.sh /var/www/cmd.sh
+RUN chmod +x /var/www/cmd.sh
 CMD ["/var/www/cmd.sh"]
 #RUN usermod -G staff www-data
 

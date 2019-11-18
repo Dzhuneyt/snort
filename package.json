@@ -11,7 +11,7 @@
     "build": "uid=$(id -u):$(id -g) docker-compose build --parallel",
     "frontend:build:dev": "cd ./services/vue && docker build -t snort_builder -f Dockerfile-builder . && docker run --env env=development -v $(pwd):/app --user $(id -u) --rm snort_builder",
     "frontend:build:prod": "cd ./services/vue && docker build -t snort_builder -f Dockerfile-builder . && docker run --env env=production -v $(pwd):/app --user $(id -u) --rm snort_builder",
-    "util:docker-compose-push": "docker-compose push"
+    "util:docker-compose-push": "$(aws ecr get-login --no-include-email) && docker-compose push"
   },
   "repository": {
     "type": "git",

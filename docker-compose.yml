@@ -2,13 +2,12 @@ version: '3.1'
 
 services:
   nginx:
-    image: nginx:stable-alpine
+    image: ${DOCKER_REGISTRY}/snort/nginx:${TAG:-latest}
+    build:
+      context: ./services/nginx
     ports:
       # Feel free to override the port in .env
       - "${NGINX_PORT:-8081}:80"
-    volumes:
-      - ./services/laravel:/var/www
-      - ./services/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - backend
       - mysql
