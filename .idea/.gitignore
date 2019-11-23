@@ -1,0 +1,8 @@
+# Default ignored files
+/workspace.xml
+/modules.xml
+/snort.iml
+/vcs.xml
+/yii2settings.xml
+/inspectionProfiles/*
+/dictionaries/*
