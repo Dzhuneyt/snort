@@ -1,23 +1,3 @@
-resource "aws_cloudwatch_log_group" "snort" {
-  name = "snort"
-
-  tags = {
-    Environment = "production"
-    Application = "serviceA"
-  }
-  retention_in_days = 7
-}
-data "aws_region" "current" {}
-
-data "template_file" "service" {
-  template = file("${path.module}/task-definitions/service.json")
-
-  vars = {
-    ecr_repository_base_url = var.ecr_repository_base_url
-    log_group = aws_cloudwatch_log_group.snort.name
-    log_region = data.aws_region.current.name
-  }
-}
 resource "aws_ecs_task_definition" "service" {
   family = "snort"
   container_definitions = data.template_file.service.rendered
@@ -27,12 +7,14 @@ resource "aws_ecs_service" "snort" {
   name = "snort"
   cluster = var.cluster_id
   task_definition = aws_ecs_task_definition.service.arn
-  desired_count = 3
+  desired_count = 2
+  deployment_minimum_healthy_percent = 50
+  deployment_maximum_percent = 200
   //  iam_role = "${aws_iam_role.foo.arn}"
 
   ordered_placement_strategy {
-    type = "binpack"
-    field = "cpu"
+    type = "spread"
+    field = "instanceId"
   }
   //
   //  load_balancer {

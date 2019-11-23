@@ -9,9 +9,12 @@
     "prod": "npm run build",
     "migrations": "docker-compose exec php php artisan migrate",
     "build": "uid=$(id -u):$(id -g) docker-compose build --parallel",
+    "build:prod": "echo $(date +%s) > tag.txt && TAG=$(cat tag.txt) uid=$(id -u):$(id -g) docker-compose -f docker-compose.prod.yml build --parallel",
     "frontend:build:dev": "cd ./services/vue && docker build -t snort_builder -f Dockerfile-builder . && docker run --env env=development -v $(pwd):/app --user $(id -u) --rm snort_builder",
     "frontend:build:prod": "cd ./services/vue && docker build -t snort_builder -f Dockerfile-builder . && docker run --env env=production -v $(pwd):/app --user $(id -u) --rm snort_builder",
-    "util:docker-compose-push": "$(aws ecr get-login --no-include-email) && docker-compose push"
+    "util:docker-compose-push": "$(aws ecr get-login --no-include-email) && TAG=$(cat tag.txt) docker-compose -f docker-compose.prod.yml push",
+    "terraform:infrastructure": "cd terraform && terraform apply",
+    "terraform:services": "export TF_VAR_docker_tag=$(cat tag.txt) && cd terraform/service && terraform apply"
   },
   "repository": {
     "type": "git",

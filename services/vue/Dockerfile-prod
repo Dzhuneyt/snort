@@ -1,12 +1,18 @@
-FROM nginx:stable-alpine
-
+# build stage
+FROM node:lts-alpine as build-stage
 WORKDIR /app
+COPY package*.json ./
+RUN npm install --no-audit
+COPY . .
+RUN npm run build
 
-ADD nginx.conf /etc/nginx/
+# production stage
+FROM nginx:stable-alpine as production-stage
+COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-RUN chmod 777 -R /var/cache
-RUN chmod 777 -R /var/log/nginx
-
-COPY ./dist /app/dist
+ARG TAG
+ENV TAG=${TAG}
+RUN echo "<!-- Version: ${TAG}-->" >> /usr/share/nginx/html/index.html
 
 EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

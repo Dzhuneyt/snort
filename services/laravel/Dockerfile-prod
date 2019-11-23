@@ -23,8 +23,6 @@ RUN usermod -u 1000 www-data
 RUN wget https://raw.githubusercontent.com/composer/getcomposer.org/76a7060ccb93902cd7576b67264ad91c8a2700e2/web/installer -O - -q | php -- --silent && \
     mv composer.phar /usr/local/bin/composer
 
-CMD ["/var/www/cmd.sh"]
-#RUN usermod -G staff www-data
+RUN composer install
 
-#ENV PORT 5000
-#CMD sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf && docker-php-entrypoint apache2-foreground
+#CMD ["/var/www/cmd.sh"]

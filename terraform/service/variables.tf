@@ -13,3 +13,6 @@ variable "cluster_id" {
 variable "ecr_repository_base_url" {
   description = "The base URL where the ECR images are hosted on"
 }
+variable "docker_tag" {
+  description = "The tag which to use to pull ECR images"
+}

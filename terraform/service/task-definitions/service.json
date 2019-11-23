@@ -1,9 +1,9 @@
 [
   {
     "name": "nginx",
-    "image": "${ecr_repository_base_url}/nginx:latest",
+    "image": "${ecr_repository_base_url}/nginx:${TAG}",
     "cpu": 10,
-    "memory": 512,
+    "memory": 128,
     "essential": true,
     "portMappings": [
       {
@@ -19,29 +19,27 @@
       "logDriver": "awslogs",
       "options": {
         "awslogs-group": "${log_group}",
-        "awslogs-region": "${log_region}",
-        "awslogs-stream-prefix": "helloworld"
+        "awslogs-region": "${log_region}"
       }
     }
   },
   {
     "name": "frontend",
-    "image": "${ecr_repository_base_url}/frontend:latest",
+    "image": "${ecr_repository_base_url}/frontend:${TAG}",
     "cpu": 10,
-    "memory": 512,
+    "memory": 128,
     "essential": true,
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
         "awslogs-group": "${log_group}",
-        "awslogs-region": "${log_region}",
-        "awslogs-stream-prefix": "helloworld"
+        "awslogs-region": "${log_region}"
       }
     }
   },
   {
     "name": "backend",
-    "image": "${ecr_repository_base_url}/backend:latest",
+    "image": "${ecr_repository_base_url}/backend:${TAG}",
     "cpu": 10,
     "memory": 512,
     "essential": true,
@@ -49,8 +47,7 @@
       "logDriver": "awslogs",
       "options": {
         "awslogs-group": "${log_group}",
-        "awslogs-region": "${log_region}",
-        "awslogs-stream-prefix": "helloworld"
+        "awslogs-region": "${log_region}"
       }
     }
   }
