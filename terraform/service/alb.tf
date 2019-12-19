@@ -7,8 +7,6 @@ resource "aws_lb" "test" {
   ]
   subnets = data.aws_subnet.public.*.id
 
-  enable_deletion_protection = true
-
   tags = {
     Environment = "production"
   }

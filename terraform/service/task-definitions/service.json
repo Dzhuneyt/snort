@@ -8,7 +8,7 @@
     "portMappings": [
       {
         "containerPort": 80,
-        "hostPort": 80
+        "hostPort": 0
       }
     ],
     "links": [
@@ -49,6 +49,28 @@
         "awslogs-group": "${log_group}",
         "awslogs-region": "${log_region}"
       }
-    }
+    },
+    "environment": [
+      {
+        "name": "DB_HOST",
+        "value": "${DB_HOST}"
+      },
+      {
+        "name": "DB_DATABASE",
+        "value": "${DB_DATABASE}"
+      },
+      {
+        "name": "DB_USERNAME",
+        "value": "${DB_USERNAME}"
+      },
+      {
+        "name": "DB_PASSWORD",
+        "value": "${DB_PASSWORD}"
+      },
+      {
+        "name": "LOG_CHANNEL",
+        "value": "errorlog"
+      }
+    ]
   }
 ]

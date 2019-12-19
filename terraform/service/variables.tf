@@ -16,3 +16,7 @@ variable "ecr_repository_base_url" {
 variable "docker_tag" {
   description = "The tag which to use to pull ECR images"
 }
+variable "DB_HOST" {}
+variable "DB_DATABASE" {}
+variable "DB_USERNAME" {}
+variable "DB_PASSWORD" {}
