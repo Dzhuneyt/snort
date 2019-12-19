@@ -11,3 +11,11 @@ output "ecr_nginx" {
 output "cluster_id" {
   value = module.ecs-cluster.cluster_id
 }
+
+output "vpc_id" {
+  value = module.vpc.vpc_id
+}
+
+output "sg_of_ec2_instances" {
+  value = module.ecs-cluster.security_group_for_ec2_instances
+}

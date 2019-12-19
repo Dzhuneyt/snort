@@ -24,3 +24,7 @@ Live demo TBD
 * Nginx
 * Terraform
 * AWS
+
+## Production deployment
+
+See [production deployment documentation](./docs/PRODUCTION_DEPLOY.md)

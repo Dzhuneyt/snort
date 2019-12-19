@@ -22,5 +22,6 @@ module "vpc" {
   tags = {
     Terraform = "true"
     Environment = "dev"
+    Name = "snort"
   }
 }
