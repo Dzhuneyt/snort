@@ -1,7 +1,7 @@
 data "aws_region" "current" {}
 
 data "template_file" "service" {
-  template = file("${path.module}/task-definitions/service.json")
+  template = file("${path.module}/service.json")
 
   vars = {
     ecr_repository_base_url = var.ecr_repository_base_url
