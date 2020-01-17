@@ -25,4 +25,4 @@ RUN wget https://raw.githubusercontent.com/composer/getcomposer.org/76a7060ccb93
 
 RUN composer install
 
-#CMD ["/var/www/cmd.sh"]
+CMD ["/var/www/cmd.sh"]

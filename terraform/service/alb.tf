@@ -16,6 +16,9 @@ resource "aws_alb_target_group" "frontend" {
   port = 80
   protocol = "HTTP"
   vpc_id = data.aws_vpc.selected.id
+  depends_on = [
+    aws_lb.this
+  ]
 }
 resource "aws_alb_listener" "frontend" {
   load_balancer_arn = aws_lb.this.id

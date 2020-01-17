@@ -32,4 +32,11 @@ module "vpc" {
     Environment = "dev"
     Name = "snort"
   }
+
+  private_subnet_tags = {
+    Private = "true"
+  }
+  public_subnet_tags = {
+    Private = "false"
+  }
 }

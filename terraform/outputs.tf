@@ -19,3 +19,6 @@ output "vpc_id" {
 output "sg_of_ec2_instances" {
   value = module.ecs-cluster.security_group_for_ec2_instances
 }
+output "rds_host" {
+  value = aws_db_instance.rds.endpoint
+}

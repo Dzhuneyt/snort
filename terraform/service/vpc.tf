@@ -3,10 +3,19 @@ data "aws_vpc" "selected" {
     Name = "snort"
   }
 }
-data "aws_subnet_ids" "this" {
+data "aws_subnet_ids" "private" {
   vpc_id = data.aws_vpc.selected.id
+  tags = {
+    Private = "true"
+  }
+}
+data "aws_subnet_ids" "public" {
+  vpc_id = data.aws_vpc.selected.id
+  tags = {
+    Private = "false"
+  }
 }
 data "aws_subnet" "public" {
-  count = length(data.aws_subnet_ids.this.ids)
-  id    = tolist(data.aws_subnet_ids.this.ids)[count.index]
+  count = length(data.aws_subnet_ids.public.ids)
+  id = tolist(data.aws_subnet_ids.public.ids)[count.index]
 }

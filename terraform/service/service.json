@@ -43,6 +43,7 @@
     "cpu": 10,
     "memory": 512,
     "essential": true,
+    "command": ["/var/www/cmd.sh"],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
