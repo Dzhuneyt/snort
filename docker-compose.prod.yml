@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
   nginx:
-    image: ${DOCKER_REGISTRY}/snort/nginx:${TAG:-latest}
+    image: 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/nginx:${TAG:-latest}
     build:
       context: ./services/nginx
     ports:
@@ -13,7 +13,7 @@ services:
       - frontend
 
   backend:
-    image: ${DOCKER_REGISTRY}/snort/backend:${TAG:-latest}
+    image: 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/backend:${TAG:-latest}
     build:
       context: ./services/laravel
       dockerfile: Dockerfile-prod
@@ -27,7 +27,7 @@ services:
   # Production serve
   # /dist folder is copied inside the container
   frontend:
-    image: ${DOCKER_REGISTRY}/snort/frontend:${TAG:-latest}
+    image: 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/frontend:${TAG:-latest}
     build:
       context: ./services/vue
       dockerfile: Dockerfile-prod

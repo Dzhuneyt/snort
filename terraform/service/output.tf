@@ -1,3 +1,3 @@
 output "alb" {
-  value = aws_lb.test.dns_name
+  value = aws_lb.this.dns_name
 }

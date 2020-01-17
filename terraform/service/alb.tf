@@ -1,5 +1,5 @@
-resource "aws_lb" "test" {
-  name = "test-lb-tf"
+resource "aws_lb" "this" {
+  name = "snort"
   internal = false
   load_balancer_type = "application"
   security_groups = [
@@ -12,13 +12,13 @@ resource "aws_lb" "test" {
   }
 }
 resource "aws_alb_target_group" "frontend" {
-  name = "tf-example-ecs-ghost"
+  name = "snort"
   port = 80
   protocol = "HTTP"
   vpc_id = data.aws_vpc.selected.id
 }
-resource "aws_alb_listener" "front_end" {
-  load_balancer_arn = aws_lb.test.id
+resource "aws_alb_listener" "frontend" {
+  load_balancer_arn = aws_lb.this.id
   port = "80"
   protocol = "HTTP"
 
