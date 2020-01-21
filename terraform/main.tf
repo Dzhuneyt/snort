@@ -1,5 +1,5 @@
 module "ecs-cluster" {
-  source = "github.com/Dzhuneyt/terraform-module-aws-ecs-cluster?ref=v1.0.6"
+  source = "github.com/Dzhuneyt/terraform-module-aws-ecs-cluster?ref=v2.0.0"
 
   // Reuse VPC
   create_vpc = false
