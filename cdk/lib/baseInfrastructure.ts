@@ -8,45 +8,46 @@ export class BaseInfrastructure extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        const repoBackend = new ecr.Repository(this, 'Backend', {
-            repositoryName: 'backend',
-            removalPolicy: RemovalPolicy.DESTROY
+        const vpc = this.createVpc();
+
+        const repos = [
+            'backend',
+            'frontend',
+            'nginx',
+        ];
+        repos.forEach(repo => {
+            const repoBackend = new ecr.Repository(this, repo, {
+                repositoryName: `snort/${repo}`,
+                removalPolicy: RemovalPolicy.DESTROY,
+            });
+            new cdk.CfnOutput(vpc, `ecr:${repo}`, {
+                value: repoBackend.repositoryUri,
+                exportName: `ecr:${repo}`
+            });
         });
 
+    }
+
+    private createVpc(): ec2.Vpc {
         // Configure the `natGatewayProvider` when defining a Vpc
+        // Nat instances are cheaper than NAT gateway but less available
         const natGatewayProvider = ec2.NatProvider.instance({
             instanceType: InstanceType.of(InstanceClass.T3A, InstanceSize.NANO),
         });
         const vpc = new ec2.Vpc(this, 'Snort', {
             natGatewayProvider: natGatewayProvider,
             cidr: '10.0.0.0/21',
-            subnetConfiguration: [
-                {
-                    cidrMask: 24,
-                    name: 'Ingress',
-                    subnetType: SubnetType.PUBLIC,
-                    reserved: true
-                },
-                {
-                    cidrMask: 24,
-                    name: 'Application',
-                    subnetType: SubnetType.PRIVATE,
-                    reserved: true
-                },
-                {
-                    cidrMask: 28,
-                    name: 'Database',
-                    subnetType: SubnetType.ISOLATED,
-                    reserved: true
-                }
-            ],
             natGateways: 1,
+            enableDnsHostnames: true,
+            enableDnsSupport: true,
         });
 
-        const vpcOutout = new cdk.CfnOutput(vpc, "vpc_id", {
+        new cdk.CfnOutput(vpc, "vpc:id", {
             value: vpc.vpcId,
             exportName: 'vpc:id'
         });
+
+        return vpc;
     }
 
 }
