@@ -10,13 +10,13 @@ jobs:
       - uses: actions/checkout@v1
 
       - name: Install Docker Compose
-        run: |
-          echo Installing Docker Compose
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          run: |
+            echo Installing Docker Compose
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
       # Prepare Docker images
       - name: Build Docker Images
-        run: npm run docker:build:prod
+          run: npm run docker:build:prod
 
       # Authenticate GitHub Actions with the AWS CLI
       - name: Assume Role
@@ -32,10 +32,10 @@ jobs:
 
       # Print the current account and role in GitHub Actions output for debugging purposes
       - name: Identity Check
-        run: aws sts get-caller-identity
+          run: aws sts get-caller-identity
 
       - name: Push Docker images to ECR
-        run: npm run docker:push-to-ecr
+          run: npm run docker:push-to-ecr
 
       # When all is finished, upload the current app version as artifact,
       # to be easily reused by subsequent jobs in the workflow
