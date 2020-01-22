@@ -7,12 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Run a one-line script
-        run: echo Hello, world!
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
       - name: Assume Role
         uses: youyo/awscredswrap@master
         with:
@@ -26,4 +20,7 @@ jobs:
       - name: Identity Check
         run: aws sts get-caller-identity
       - name: Build Docker Images
-        run: npm run docker:build:prod
+        run: |
+          echo Installing Docker Compose
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          npm run docker:build:prod
