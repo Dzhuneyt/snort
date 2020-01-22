@@ -14,6 +14,11 @@ jobs:
         with:
           path: ./docker-layers
           key: ${{ runner.os }}-docker-layers
+      - name: Import Docker Layers
+        run: |
+          docker load < ./docker-layers/frontend.tar
+          docker load < ./docker-layers/backend.tar
+          docker load < ./docker-layers/nginx.tar
       - name: Assume Role
         uses: youyo/awscredswrap@master
         with:
