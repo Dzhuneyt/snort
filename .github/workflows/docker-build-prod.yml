@@ -19,8 +19,13 @@ jobs:
           AWS_DEFAULT_REGION: 'us-east-1'
       - name: Identity Check
         run: aws sts get-caller-identity
-      - name: Build Docker Images
+      - name: Install Docker Compose
         run: |
           echo Installing Docker Compose
           sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+      - name: Build Docker Images
+        run: |
           npm run docker:build:prod
+      - name: Push Docker images to ECR
+        run: |
+          npm run docker:push-to-ecr
