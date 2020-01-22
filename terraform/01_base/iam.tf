@@ -29,13 +29,20 @@ data "aws_iam_policy_document" "inline_policy" {
       "*"
     ]
   }
+  statement {
+    actions = [
+    "ecr:InitiateLayerUpload"]
+    resources = [
+      "arn:aws:ecr:*:*:repository/snort/*"
+    ]
+  }
 }
 resource "aws_iam_role_policy" "this" {
   policy = data.aws_iam_policy_document.inline_policy.json
-  role = aws_iam_role.github.id
+  role   = aws_iam_role.github.id
 }
 resource "aws_iam_role" "github" {
-  name = "github"
+  name               = "github"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
 
