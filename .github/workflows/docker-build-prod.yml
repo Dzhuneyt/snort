@@ -47,7 +47,7 @@ jobs:
           path: tag.txt
 
   _02_infrastructure:
-    needs: build_and_push_docker_images
+    needs: _01_build_and_push_docker_images
     runs-on: ubuntu-latest
     steps:
       # Clone source code
