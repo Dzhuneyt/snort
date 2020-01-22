@@ -9,12 +9,8 @@ variable "ssh_key_name" {
 }
 variable "ecr_repository_base_url" {
   description = "The base URL where the ECR images are hosted on"
-  default     = "216987438199.dkr.ecr.us-east-1.amazonaws.com/snort"
+  default = "216987438199.dkr.ecr.us-east-1.amazonaws.com/snort"
 }
 variable "docker_tag" {
   description = "The tag which to use to pull ECR images"
 }
-variable "DB_HOST" {}
-variable "DB_DATABASE" {}
-variable "DB_USERNAME" {}
-variable "DB_PASSWORD" {}
