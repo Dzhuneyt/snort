@@ -1,4 +1,4 @@
-name: RolesTest
+name: Deploy
 
 on: [push]
 
@@ -36,7 +36,7 @@ jobs:
       - name: Push Docker images to ECR
         run: |
           npm run docker:push-to-ecr
-      - name: Cache Docker Layers
+      - name: Export Docker Layers
         run: |
           export TAG=$(cat tag.txt)
           docker save 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/frontend:${TAG} > ./docker-layers/frontend.tar
