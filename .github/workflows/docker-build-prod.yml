@@ -16,8 +16,7 @@ jobs:
 
       # Prepare Docker images
       - name: Build Docker Images
-        run: |
-          npm run docker:build:prod
+        run: npm run docker:build:prod
 
       # Authenticate GitHub Actions with the AWS CLI
       - name: Assume Role
