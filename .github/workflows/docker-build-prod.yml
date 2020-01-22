@@ -26,5 +26,4 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: 'us-east-1'
     - name: Identity Check
-      with:
-        args: sts get-caller-identity
+      run: aws sts get-caller-identity
