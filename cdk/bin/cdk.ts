@@ -1,21 +1,15 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
-import {BaseInfrastructure} from '../lib/baseInfrastructure';
+import {IamStack} from '../lib/iamStack';
 
 const app = new cdk.App();
 
 // Step 1: Create the base infrastructure
-new BaseInfrastructure(app, 'snort-base-infrastructure', {
+new IamStack(app, 'snort-iam', {
+    description: "IAM definitions for the Snort infrastructure. E.g. the IAM role to be used by GitHub actions",
     env: {
         region: 'us-east-1',
         account: process.env.CDK_DEFAULT_ACCOUNT,
     }
 });
-
-// new Snort(app, 'Snort', {
-//     env: {
-//         region: 'us-east-1'
-//     }
-// });
-
