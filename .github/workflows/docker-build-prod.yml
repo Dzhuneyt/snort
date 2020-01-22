@@ -16,9 +16,7 @@ jobs:
           key: ${{ runner.os }}-docker-layers
       - name: Import Docker Layers
         run: |
-          docker load < ./docker-layers/frontend.tar
-          docker load < ./docker-layers/backend.tar
-          docker load < ./docker-layers/nginx.tar
+          docker load -i ~/docker-layers/images.tar | true
       - name: Assume Role
         uses: youyo/awscredswrap@master
         with:
@@ -44,9 +42,7 @@ jobs:
       - name: Export Docker Layers
         run: |
           export TAG=$(cat tag.txt)
-          docker save 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/frontend:${TAG} > ./docker-layers/frontend.tar
-          docker save 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/backend:${TAG} > ./docker-layers/backend.tar
-          docker save 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/nginx:${TAG} > ./docker-layers/nginx.tar
+          docker save $(docker images -q) -o ~/docker-layers/images.tar
       - name: Upload tag artifact for later reuse
         uses: actions/upload-artifact@v1
         with:
