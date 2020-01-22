@@ -8,17 +8,12 @@ output "ecr_nginx" {
   value = aws_ecr_repository.nginx.repository_url
 }
 
-output "cluster_id" {
-  value = module.ecs-cluster.cluster_id
-}
-
 output "vpc_id" {
   value = module.vpc.vpc_id
 }
-
-output "sg_of_ec2_instances" {
-  value = module.ecs-cluster.security_group_for_ec2_instances
+output "public_subnets" {
+  value = module.vpc.public_subnets
 }
-output "rds_host" {
-  value = aws_db_instance.rds.endpoint
+output "private_subnets" {
+  value = module.vpc.private_subnets
 }

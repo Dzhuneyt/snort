@@ -17,5 +17,5 @@ data "aws_subnet_ids" "public" {
 }
 data "aws_subnet" "public" {
   count = length(data.aws_subnet_ids.public.ids)
-  id = tolist(data.aws_subnet_ids.public.ids)[count.index]
+  id    = tolist(data.aws_subnet_ids.public.ids)[count.index]
 }
