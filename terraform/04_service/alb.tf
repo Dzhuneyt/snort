@@ -1,5 +1,5 @@
 resource "aws_lb" "this" {
-  name               = "snort"
+  name               = local.stack_name
   internal           = false
   load_balancer_type = "application"
   security_groups = [
