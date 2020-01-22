@@ -3,57 +3,57 @@ name: Deploy
 on: [push]
 
 jobs:
-  build_and_push_docker_images:
+  01_build_and_push_docker_images:
     runs-on: ubuntu-latest
     steps:
+      # Checkout the source code
       - uses: actions/checkout@v1
-      - run: mkdir ./docker-layers
-      - name: Cache Docker Layers
-        id: cache-docker-layers
-        uses: actions/cache@v1
-        with:
-          path: ~/docker-layers
-          key: ${{ runner.os }}-docker-layers
-      - name: Import Docker Layers
-        run: |
-          docker load -i ~/docker-layers/images.tar | true
-      - name: Assume Role
-        uses: youyo/awscredswrap@master
-        with:
-          role_arn: ${{ secrets.ROLE_ARN }}
-          duration_seconds: 3600
-          role_session_name: 'awscredswrap@GitHubActions'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-east-1'
-      - name: Identity Check
-        run: aws sts get-caller-identity
+
       - name: Install Docker Compose
         run: |
           echo Installing Docker Compose
           sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+      # Prepare Docker images
       - name: Build Docker Images
         run: |
           npm run docker:build:prod
+
+      # Authenticate GitHub Actions with the AWS CLI
+      - name: Assume Role
+          uses: youyo/awscredswrap@master
+          with:
+            role_arn: ${{ secrets.ROLE_ARN }}
+            duration_seconds: 3600
+            role_session_name: 'awscredswrap@GitHubActions'
+          env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION: 'us-east-1'
+
+      # Print the current account and role in GitHub Actions output for debugging purposes
+      - name: Identity Check
+        run: aws sts get-caller-identity
+
       - name: Push Docker images to ECR
-        run: |
-          npm run docker:push-to-ecr
-      - name: Export Docker Layers
-        run: |
-          export TAG=$(cat tag.txt)
-          mkdir ~/docker-layers || true
-          docker save $(docker images -q) -o ~/docker-layers/images.tar
-      - name: Upload tag artifact for later reuse
+        run: npm run docker:push-to-ecr
+
+      # When all is finished, upload the current app version as artifact,
+      # to be easily reused by subsequent jobs in the workflow
+      - name: Persist app version as artifact
         uses: actions/upload-artifact@v1
         with:
           name: tag
           path: tag.txt
-  infrastructure:
+
+  02_infrastructure:
     needs: build_and_push_docker_images
     runs-on: ubuntu-latest
     steps:
+      # Clone source code
       - uses: actions/checkout@v1
+
+      # Authenticate GitHub Actions with AWS CLI
       - name: Assume Role
         uses: youyo/awscredswrap@master
         with:
@@ -64,6 +64,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
+
       - name: Provision Database
         run: |
           npm run terraform:02_database
