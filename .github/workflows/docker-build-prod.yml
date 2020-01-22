@@ -3,7 +3,7 @@ name: Deploy
 on: [push]
 
 jobs:
-  01_build_and_push_docker_images:
+  _01_build_and_push_docker_images:
     runs-on: ubuntu-latest
     steps:
       # Checkout the source code
@@ -46,7 +46,7 @@ jobs:
           name: tag
           path: tag.txt
 
-  02_infrastructure:
+  _02_infrastructure:
     needs: build_and_push_docker_images
     runs-on: ubuntu-latest
     steps:
