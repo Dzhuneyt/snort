@@ -20,15 +20,15 @@ jobs:
 
       # Authenticate GitHub Actions with the AWS CLI
       - name: Assume Role
-          uses: youyo/awscredswrap@master
-          with:
-            role_arn: ${{ secrets.ROLE_ARN }}
-            duration_seconds: 3600
-            role_session_name: 'awscredswrap@GitHubActions'
-          env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_DEFAULT_REGION: 'us-east-1'
+        uses: youyo/awscredswrap@master
+        with:
+          role_arn: ${{ secrets.ROLE_ARN }}
+          duration_seconds: 3600
+          role_session_name: 'awscredswrap@GitHubActions'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
 
       # Print the current account and role in GitHub Actions output for debugging purposes
       - name: Identity Check
