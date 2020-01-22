@@ -8,6 +8,12 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: mkdir ./docker-layers
+      - name: Cache Docker Layers
+        id: cache-docker-layers
+        uses: actions/cache@v1
+        with:
+          path: ./docker-layers
+          key: ${{ runner.os }}-docker-layers
       - name: Assume Role
         uses: youyo/awscredswrap@master
         with:
