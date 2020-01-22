@@ -29,3 +29,8 @@ jobs:
       - name: Push Docker images to ECR
         run: |
           npm run docker:push-to-ecr
+      - name: Upload tag artifact for later reuse
+        uses: actions/upload-artifact@v1
+        with:
+          name: tag
+          path: tag.txt

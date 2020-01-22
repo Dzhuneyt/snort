@@ -31,7 +31,23 @@ data "aws_iam_policy_document" "inline_policy" {
   }
   statement {
     actions = [
-    "ecr:InitiateLayerUpload"]
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:GetRepositoryPolicy",
+      "ecr:DescribeRepositories",
+      "ecr:ListImages",
+      "ecr:DescribeImages",
+      "ecr:BatchGetImage",
+      "ecr:GetLifecyclePolicy",
+      "ecr:GetLifecyclePolicyPreview",
+      "ecr:ListTagsForResource",
+      "ecr:DescribeImageScanFindings",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+      "ecr:PutImage"
+    ]
     resources = [
       "arn:aws:ecr:*:*:repository/snort/*"
     ]
@@ -44,6 +60,7 @@ resource "aws_iam_role_policy" "this" {
 resource "aws_iam_role" "github" {
   name               = "github"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
+
 }
 
 resource "aws_iam_access_key" "this" {
