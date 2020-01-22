@@ -3,7 +3,7 @@ name: RolesTest
 on: [push]
 
 jobs:
-  docker_compose_push:
+  build_and_push_docker_images:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -29,13 +29,20 @@ jobs:
       - name: Push Docker images to ECR
         run: |
           npm run docker:push-to-ecr
+      - name: Cache Docker Layers
+        run: |
+          mkdir ./docker-layers
+          export TAG=$(cat tag.txt)
+          docker save 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/frontend:${TAG} > ./docker-layers/frontend.tar
+          docker save 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/backend:${TAG} > ./docker-layers/backend.tar
+          docker save 216987438199.dkr.ecr.us-east-1.amazonaws.com/snort/nginx:${TAG} > ./docker-layers/nginx.tar
       - name: Upload tag artifact for later reuse
         uses: actions/upload-artifact@v1
         with:
           name: tag
           path: tag.txt
-  provision_infrastructure__02_database:
-    needs: docker_compose_push
+  infrastructure:
+    needs: build_and_push_docker_images
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -49,3 +56,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
+      - name: Provision Database
+        run: |
+          npm run terraform:02_database
