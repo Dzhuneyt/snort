@@ -151,6 +151,16 @@ data "aws_iam_policy_document" "terraform_backend_manager" {
       "${data.aws_s3_bucket.terraform_backend.arn}/snort/*"
     ]
   }
+  statement {
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem"
+    ]
+    resources = [
+      data.aws_dynamodb_table.terraform_state_lock.arn
+    ]
+  }
 }
 resource "aws_iam_policy" "terraform_backend_manager" {
   path = "/github/snort/"
