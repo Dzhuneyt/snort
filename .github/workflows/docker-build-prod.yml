@@ -49,6 +49,10 @@ jobs:
           name: tag
           path: tag.txt
 
+      - name: Overwrite "latest" tag
+        run: |
+          echo "latest" > tag.txt
+          npm run docker:push-to-ecr
   _02_infrastructure:
     needs: _01_build_and_push_docker_images
     runs-on: ubuntu-latest
