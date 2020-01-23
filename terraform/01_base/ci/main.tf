@@ -22,6 +22,10 @@ resource "aws_iam_role_policy_attachment" "attachment6" {
   policy_arn = aws_iam_policy.ecs_cluster_manager.arn
   role = aws_iam_role.github.name
 }
+resource "aws_iam_role_policy_attachment" "attachment7" {
+  policy_arn = data.aws_iam_policy.IAMReadOnlyAccess.arn
+  role = aws_iam_role.github.name
+}
 
 //resource "aws_iam_role_policy_attachment" "role_attach_admin_policy" {
 //  policy_arn = data.aws_iam_policy.AdministratorAccess.arn

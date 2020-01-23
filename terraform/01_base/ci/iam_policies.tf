@@ -196,6 +196,14 @@ data "aws_iam_policy_document" "ecs_cluster_manager" {
       "arn:*:iam::*:role/snort-ec2-role*"
     ]
   }
+  statement {
+    actions = [
+      "iam:GetPolicyVersion"
+    ]
+    resources = [
+      "arn:aws:iam::*:policy/snort-ecs-policy*"
+    ]
+  }
 }
 resource "aws_iam_policy" "ecs_cluster_manager" {
   path = "/github/snort/"
