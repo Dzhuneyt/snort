@@ -31,11 +31,16 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
 
+      - name: Cache Docker Layers
+          id: docker-layers
+          uses: actions/cache@v1
+          with:
+            path: /var/lib/docker
+            key: ${{ runner.os }}-docker-layers
+
       # Prepare Docker images
       - name: Build Docker Images
         run: |
-          # Reuse latest tags cache in build process
-          TAG=latest npm run docker:pull-from-ecr
           # Create a new timestamp tag
           npm run docker:create-tag-file
           # Build the images and tag them with this timestamp tag
@@ -46,13 +51,7 @@ jobs:
         run: aws sts get-caller-identity
 
       - name: Push Docker images to ECR
-        run: |
-          # Push the image tag to ECR
-          npm run docker:push-to-ecr
-
-          # Also overwrite the latest tag
-          TAG=latest npm run docker:build:prod
-          TAG=latest npm run docker:push-to-ecr
+        run: npm run docker:push-to-ecr
 
       # When all is finished, upload the current app version as artifact,
       # to be easily reused by subsequent jobs in the workflow

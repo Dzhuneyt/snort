@@ -34,9 +34,9 @@ data "aws_iam_policy_document" "ecr" {
   }
 }
 resource "aws_iam_policy" "ecr" {
-  path = "/github/snort/"
+  path        = "/github/snort/"
   name_prefix = "github_snort_ecr_pusher"
-  policy = data.aws_iam_policy_document.ecr.json
+  policy      = data.aws_iam_policy_document.ecr.json
 }
 
 data "aws_iam_policy_document" "ec2_read_only" {
@@ -50,9 +50,9 @@ data "aws_iam_policy_document" "ec2_read_only" {
   }
 }
 resource "aws_iam_policy" "ec2_read_only" {
-  path = "/github/snort/"
+  path        = "/github/snort/"
   name_prefix = "github_snort_ec2_read_only"
-  policy = data.aws_iam_policy_document.ec2_read_only.json
+  policy      = data.aws_iam_policy_document.ec2_read_only.json
 }
 
 data "aws_kms_key" "ssm" {
@@ -69,9 +69,9 @@ data "aws_iam_policy_document" "kms" {
   }
 }
 resource "aws_iam_policy" "kms" {
-  path = "/github/snort/"
+  path        = "/github/snort/"
   name_prefix = "github_snort_kms"
-  policy = data.aws_iam_policy_document.kms.json
+  policy      = data.aws_iam_policy_document.kms.json
 }
 
 # Generic "read only" permissions
@@ -88,9 +88,9 @@ data "aws_iam_policy_document" "generic_read_only" {
   statement {
     sid = "SSMDescribeAllParameters"
     actions = [
-      "ssm:DescribeParameters"]
+    "ssm:DescribeParameters"]
     resources = [
-      "*"]
+    "*"]
   }
   statement {
     sid = "ReadTags"
@@ -126,11 +126,19 @@ data "aws_iam_policy_document" "generic_read_only" {
       "*"
     ]
   }
+  statement {
+    actions = [
+      "autoscaling:DescribeLaunchConfigurations",
+      "servicediscovery:GetNamespace",
+    ]
+    resources = [
+    "*"]
+  }
 }
 resource "aws_iam_policy" "generic_read_only" {
-  path = "/github/snort/"
+  path        = "/github/snort/"
   name_prefix = "github_snort_generic"
-  policy = data.aws_iam_policy_document.generic_read_only.json
+  policy      = data.aws_iam_policy_document.generic_read_only.json
 }
 
 data "aws_iam_policy_document" "terraform_backend_manager" {
@@ -163,9 +171,9 @@ data "aws_iam_policy_document" "terraform_backend_manager" {
   }
 }
 resource "aws_iam_policy" "terraform_backend_manager" {
-  path = "/github/snort/"
+  path        = "/github/snort/"
   name_prefix = "github_snort_terraform_backend_manage"
-  policy = data.aws_iam_policy_document.terraform_backend_manager.json
+  policy      = data.aws_iam_policy_document.terraform_backend_manager.json
 }
 
 # Allow CI to provision ECS cluster
@@ -206,9 +214,9 @@ data "aws_iam_policy_document" "ecs_cluster_manager" {
   }
 }
 resource "aws_iam_policy" "ecs_cluster_manager" {
-  path = "/github/snort/"
+  path        = "/github/snort/"
   name_prefix = "github_snort_manage_ecs_cluster"
-  policy = data.aws_iam_policy_document.ecs_cluster_manager.json
+  policy      = data.aws_iam_policy_document.ecs_cluster_manager.json
 }
 
 
