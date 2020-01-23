@@ -1,6 +1,9 @@
-name: Deploy
+name: Production
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   _01_build_and_push_docker_images:
@@ -11,8 +14,8 @@ jobs:
 
       - name: Install Docker Compose
         run: |
-            echo Installing Docker Compose
-            sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          echo Installing Docker Compose
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
       # Prepare Docker images
       - name: Build Docker Images
@@ -36,7 +39,7 @@ jobs:
 
       - name: Push Docker images to ECR
         run: |
-            npm run docker:push-to-ecr
+          npm run docker:push-to-ecr
 
       # When all is finished, upload the current app version as artifact,
       # to be easily reused by subsequent jobs in the workflow
