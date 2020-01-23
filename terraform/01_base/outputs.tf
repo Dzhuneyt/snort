@@ -18,11 +18,11 @@ output "private_subnets" {
   value = module.vpc.private_subnets
 }
 output "github_role_arn" {
-  value = aws_iam_role.github.arn
+  value = module.ci.github_role_arn
 }
 output "github_access_key" {
-  value = aws_iam_access_key.this.id
+  value = module.ci.github_access_key
 }
 output "github_access_secret_key" {
-  value = aws_iam_access_key.this.secret
+  value = module.ci.github_access_secret_key
 }
