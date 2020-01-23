@@ -14,6 +14,10 @@ resource "aws_iam_role_policy_attachment" "attachment4" {
   policy_arn = aws_iam_policy.kms.arn
   role = aws_iam_role.github.name
 }
+resource "aws_iam_role_policy_attachment" "attachment5" {
+  policy_arn = aws_iam_policy.terraform_backend_manager.arn
+  role = aws_iam_role.github.name
+}
 
 //resource "aws_iam_role_policy_attachment" "role_attach_admin_policy" {
 //  policy_arn = data.aws_iam_policy.AdministratorAccess.arn

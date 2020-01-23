@@ -133,5 +133,30 @@ resource "aws_iam_policy" "generic_read_only" {
   policy = data.aws_iam_policy_document.generic_read_only.json
 }
 
+data "aws_iam_policy_document" "terraform_backend_manager" {
+  statement {
+    actions = [
+      "s3:ListBucket"
+    ]
+    resources = [
+      data.aws_s3_bucket.terraform_backend.arn
+    ]
+  }
+  statement {
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject"
+    ]
+    resources = [
+      "${data.aws_s3_bucket.terraform_backend.arn}/snort/*"
+    ]
+  }
+}
+resource "aws_iam_policy" "terraform_backend_manager" {
+  path = "/github/snort/"
+  name_prefix = "github_snort_terraform_backend_manage"
+  policy = data.aws_iam_policy_document.terraform_backend_manager.json
+}
+
 
 // TODO Attach the above policies to the role and remove the Admin policy as attachment
