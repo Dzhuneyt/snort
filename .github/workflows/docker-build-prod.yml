@@ -19,7 +19,13 @@ jobs:
 
       # Prepare Docker images
       - name: Build Docker Images
-        run: npm run docker:build:prod
+        run: |
+          # Reuse latest tags cache in build process
+          TAG=latest npm run docker:pull-from-ecr
+          # Create a new timestamp tag
+          npm run docker:create-tag-file
+          # Build the images and tag them with this timestamp tag
+          npm run docker:build:prod
 
       # Authenticate GitHub Actions with the AWS CLI
       - name: Assume Role
@@ -39,7 +45,12 @@ jobs:
 
       - name: Push Docker images to ECR
         run: |
+          # Push the image tag to ECR
           npm run docker:push-to-ecr
+
+          # Also overwrite the latest tag
+          TAG=latest npm run docker:build:prod
+          TAG=latest npm run docker:push-to-ecr
 
       # When all is finished, upload the current app version as artifact,
       # to be easily reused by subsequent jobs in the workflow
