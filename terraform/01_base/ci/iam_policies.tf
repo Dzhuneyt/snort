@@ -168,5 +168,40 @@ resource "aws_iam_policy" "terraform_backend_manager" {
   policy = data.aws_iam_policy_document.terraform_backend_manager.json
 }
 
+# Allow CI to provision ECS cluster
+data "aws_iam_policy_document" "ecs_cluster_manager" {
+  statement {
+    sid = "ReadClusterIAMRoles"
+    actions = [
+      "iam:GetPolicy"
+    ]
+    resources = [
+      "arn:aws:iam::*:policy/snort-ecs-policy*"
+    ]
+  }
+  statement {
+    sid = "ReadECSClusterMetadata"
+    actions = [
+      "ecs:Describe*"
+    ]
+    resources = [
+      "arn:aws:ecs:*:*:cluster/snort"
+    ]
+  }
+  statement {
+    actions = [
+      "iam:GetRole"
+    ]
+    resources = [
+      "arn:*:iam::*:role/snort-ec2-role*"
+    ]
+  }
+}
+resource "aws_iam_policy" "ecs_cluster_manager" {
+  path = "/github/snort/"
+  name_prefix = "github_snort_manage_ecs_cluster"
+  policy = data.aws_iam_policy_document.ecs_cluster_manager.json
+}
+
 
 // TODO Attach the above policies to the role and remove the Admin policy as attachment

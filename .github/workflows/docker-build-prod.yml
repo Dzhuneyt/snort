@@ -12,6 +12,8 @@ jobs:
       # Checkout the source code
       - uses: actions/checkout@v1
 
+      - run: docker info
+
       - name: Install Docker Compose
         run: |
           echo Installing Docker Compose
