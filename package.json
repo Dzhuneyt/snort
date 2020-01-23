@@ -12,7 +12,7 @@
     "docker:push-to-ecr": "$(aws ecr get-login --no-include-email) && TAG=$(cat tag.txt) docker-compose -f docker-compose.prod.yml push",
     "app:vue:build:dev": "cd ./services/vue && docker build -t snort_builder -f Dockerfile-builder . && docker run --env env=development -v $(pwd):/app --user $(id -u) --rm snort_builder",
     "app:vue:build:prod": "cd ./services/vue && docker build -t snort_builder -f Dockerfile-builder . && docker run --env env=production -v $(pwd):/app --user $(id -u) --rm snort_builder",
-    "terraform:01_base": "cd terraform/01_base && terraform apply",
+    "terraform:01_base": "cd terraform/01_base && terraform init && terraform apply",
     "terraform:02_database": "cd terraform/02_database && terraform init && terraform apply",
     "terraform:03_cluster": "cd terraform/03_cluster && terraform init && terraform apply",
     "terraform:04_service": "export TF_VAR_docker_tag=$(cat tag.txt) && cd terraform/04_service && terraform init && terraform apply"
