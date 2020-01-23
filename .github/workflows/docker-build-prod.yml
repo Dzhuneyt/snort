@@ -17,16 +17,6 @@ jobs:
           echo Installing Docker Compose
           sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
-      # Prepare Docker images
-      - name: Build Docker Images
-        run: |
-          # Reuse latest tags cache in build process
-          TAG=latest npm run docker:pull-from-ecr
-          # Create a new timestamp tag
-          npm run docker:create-tag-file
-          # Build the images and tag them with this timestamp tag
-          npm run docker:build:prod
-
       # Authenticate GitHub Actions with the AWS CLI
       - name: Assume Role
         uses: youyo/awscredswrap@master
@@ -38,6 +28,16 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
+
+      # Prepare Docker images
+      - name: Build Docker Images
+        run: |
+          # Reuse latest tags cache in build process
+          TAG=latest npm run docker:pull-from-ecr
+          # Create a new timestamp tag
+          npm run docker:create-tag-file
+          # Build the images and tag them with this timestamp tag
+          npm run docker:build:prod
 
       # Print the current account and role in GitHub Actions output for debugging purposes
       - name: Identity Check
