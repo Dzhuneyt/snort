@@ -10,7 +10,7 @@
     "app:laravel:migrations": "docker-compose exec php php artisan migrate",
     "docker:create-tag-file": "TAG=${TAG:-$(date +%s)} && echo ${TAG} > tag.txt && echo Created tag file for tag: ${TAG}",
     "docker:build:dev": "uid=$(id -u):$(id -g) docker-compose build --parallel",
-    "docker:build:prod": "TAG=${TAG:-$(cat tag.txt)} && uid=$(id -u):$(id -g) docker-compose -f docker-compose.prod.yml build --parallel",
+    "docker:build:prod": "TAG=${TAG:-$(cat tag.txt)} uid=$(id -u):$(id -g) docker-compose -f docker-compose.prod.yml build --pull --parallel",
     "docker:pull-from-ecr": "npm run ecr:login && TAG=${TAG:-$(cat tag.txt)} docker-compose -f docker-compose.prod.yml pull",
     "docker:push-to-ecr": "npm run ecr:login && TAG=${TAG:-$(cat tag.txt)} docker-compose -f docker-compose.prod.yml push",
     "app:vue:build:dev": "cd ./services/vue && docker build -t snort_builder -f Dockerfile-builder . && docker run --env env=development -v $(pwd):/app --user $(id -u) --rm snort_builder",
