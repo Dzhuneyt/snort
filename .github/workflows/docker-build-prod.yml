@@ -34,11 +34,7 @@ jobs:
       - name: Build Docker Images
         run: |
           export TAG=$(git rev-parse --short "$GITHUB_SHA")
-          # Create a new timestamp tag
-          # npm run docker:create-tag-file
-          # Build the images and tag them with this timestamp tag
-          echo $TAG
-          exit 1
+          # Build the images and tag them with the commit SHA1
           npm run docker:build:prod
 
       # Print the current account and role in GitHub Actions output for debugging purposes
@@ -46,7 +42,9 @@ jobs:
         run: aws sts get-caller-identity
 
       - name: Push Docker images to ECR
-        run: npm run docker:push-to-ecr
+        run: |
+          export TAG=$(git rev-parse --short "$GITHUB_SHA")
+          npm run docker:push-to-ecr
 
       # When all is finished, upload the current app version as artifact,
       # to be easily reused by subsequent jobs in the workflow
