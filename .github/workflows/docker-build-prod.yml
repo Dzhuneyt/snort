@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  _01_build_and_push_docker_images:
+  build_and_push_docker_images:
     runs-on: ubuntu-latest
     steps:
       # Checkout the source code
@@ -53,7 +53,7 @@ jobs:
         with:
           name: tag
           path: tag.txt
-  _02_provision_database:
+  provision_infrastructure_database:
     runs-on: ubuntu-latest
     steps:
       # Clone source code
@@ -75,7 +75,7 @@ jobs:
         run: |
           npm run terraform:02_database
 
-  _02_provision_ecs_cluster:
+  provision_infrastructure_ecs_cluster:
     runs-on: ubuntu-latest
     steps:
       # Clone source code
