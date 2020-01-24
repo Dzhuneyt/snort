@@ -136,6 +136,14 @@ data "aws_iam_policy_document" "generic_read_only" {
     resources = [
       "*"]
   }
+  statement {
+    actions = [
+      "logs:ListTagsLogGroup"
+    ]
+    resources = [
+      "arn:aws:logs:*:*:log-group:snort*"
+    ]
+  }
 }
 resource "aws_iam_policy" "generic_read_only" {
   path = "/github/snort/"
