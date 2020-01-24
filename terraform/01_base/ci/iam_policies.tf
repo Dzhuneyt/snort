@@ -129,6 +129,7 @@ data "aws_iam_policy_document" "generic_read_only" {
   statement {
     actions = [
       "autoscaling:DescribeLaunchConfigurations",
+      "autoscaling:DescribeAutoScalingGroups",
       "servicediscovery:GetNamespace",
     ]
     resources = [

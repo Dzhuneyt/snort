@@ -75,5 +75,6 @@ jobs:
       - name: Provision Database
         run: |
           npm run terraform:02_database
+
       - name: Provision ECS cluster
         run: npm run terraform:03_cluster
