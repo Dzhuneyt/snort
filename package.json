@@ -18,7 +18,7 @@
     "terraform:01_base": "cd terraform/01_base && terraform init && terraform apply",
     "terraform:02_database": "cd terraform/02_database && terraform init && terraform apply",
     "terraform:03_cluster": "cd terraform/03_cluster && terraform init && terraform apply",
-    "terraform:04_service": "export TF_VAR_docker_tag=$(cat tag.txt) && cd terraform/04_service && terraform init && terraform apply"
+    "terraform:04_service": "export TF_VAR_docker_tag=${TAG:-$(cat tag.txt)} && cd terraform/04_service && terraform init && terraform apply"
   },
   "repository": {
     "type": "git",

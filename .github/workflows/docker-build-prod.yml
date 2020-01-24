@@ -45,14 +45,6 @@ jobs:
         run: |
           export TAG=$(git rev-parse --short "$GITHUB_SHA")
           npm run docker:push-to-ecr
-
-      # When all is finished, upload the current app version as artifact,
-      # to be easily reused by subsequent jobs in the workflow
-      - name: Persist app version as artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: tag
-          path: tag.txt
   terraform_db:
     name: Provision AWS infrastructure related to the database (RDS)
     runs-on: ubuntu-latest
@@ -119,4 +111,9 @@ jobs:
           AWS_DEFAULT_REGION: 'us-east-1'
 
       - name: Provision ECS cluster
-        run: npm run terraform:03_cluster
+        run: |
+          export TAG=$(git rev-parse --short "$GITHUB_SHA")
+          npm run terraform:04_service
+
+# TODO send email action on successful deploy
+# Include commit hash and branch, as well as output from Terraform stacks
