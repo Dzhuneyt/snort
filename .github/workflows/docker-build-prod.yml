@@ -13,9 +13,6 @@ jobs:
       # Checkout the source code
       - uses: actions/checkout@v1
 
-      - run: export git_hash=$(git rev-parse --short "$GITHUB_SHA")
-      - run: echo $git_hash
-
       - name: Install Docker Compose
         run: |
           echo Installing Docker Compose
@@ -36,9 +33,12 @@ jobs:
       # Prepare Docker images
       - name: Build Docker Images
         run: |
+          export TAG=$(git rev-parse --short "$GITHUB_SHA")
           # Create a new timestamp tag
-          npm run docker:create-tag-file
+          # npm run docker:create-tag-file
           # Build the images and tag them with this timestamp tag
+          echo $TAG
+          exit 1
           npm run docker:build:prod
 
       # Print the current account and role in GitHub Actions output for debugging purposes
