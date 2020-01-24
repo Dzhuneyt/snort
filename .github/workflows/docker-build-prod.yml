@@ -95,3 +95,25 @@ jobs:
 
         - name: Provision ECS cluster
           run: npm run terraform:03_cluster
+
+  deploy:
+    needs: [build_and_push_docker_images, provision_infrastructure_database, provision_infrastructure_ecs_cluster]
+    runs-on: ubuntu-latest
+    steps:
+      # Clone source code
+      - uses: actions/checkout@v1
+
+      # Authenticate GitHub Actions with AWS CLI
+      - name: Assume Role
+        uses: youyo/awscredswrap@master
+        with:
+          role_arn: ${{ secrets.ROLE_ARN }}
+          duration_seconds: 3600
+          role_session_name: 'awscredswrap@GitHubActions'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+
+      - name: Provision ECS cluster
+        run: npm run terraform:03_cluster
