@@ -112,8 +112,9 @@ jobs:
 
       - name: Provision ECS cluster
         run: |
+          export TF_IN_AUTOMATION=1
           export TAG=$(git rev-parse --short "$GITHUB_SHA")
-          npm run terraform:04_service
+          yes | npm run terraform:04_service
 
 # TODO send email action on successful deploy
 # Include commit hash and branch, as well as output from Terraform stacks
