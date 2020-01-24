@@ -217,6 +217,13 @@ data "aws_iam_policy_document" "ecs_cluster_manager" {
   }
   statement {
     actions = [
+      "ecs:DescribeTaskDefinition"
+    ]
+    resources = [
+    "*"]
+  }
+  statement {
+    actions = [
       "iam:GetRole"
     ]
     resources = [
