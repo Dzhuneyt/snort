@@ -104,7 +104,7 @@ jobs:
       - run: |
           mkdir tvm
           git clone https://github.com/Dzhuneyt/terraform-version-manager.git
-          ./tvm 0.12.20
+          ./tvm/tvm 0.12.20
 
       # Authenticate GitHub Actions with AWS CLI
       - name: Assume Role
