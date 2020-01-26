@@ -102,6 +102,7 @@ jobs:
       # Clone source code
       - uses: actions/checkout@v1
       - run: |
+          mkdir tvm
           git clone https://github.com/Dzhuneyt/terraform-version-manager.git
           ./tvm 0.12.20
 
