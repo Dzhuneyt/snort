@@ -102,7 +102,7 @@ jobs:
       # Clone source code
       - uses: actions/checkout@v1
       - run: |
-          git clone git@github.com:Dzhuneyt/terraform-version-manager.git
+          git clone https://github.com/Dzhuneyt/terraform-version-manager.git
           ./tvm 0.12.20
 
       # Authenticate GitHub Actions with AWS CLI
