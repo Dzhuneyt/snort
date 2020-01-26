@@ -114,7 +114,7 @@ jobs:
         run: |
           export TF_IN_AUTOMATION=1
           export TAG=$(git rev-parse --short "$GITHUB_SHA")
-          yes | npm run terraform:04_service
+          printf 'yes' | npm run terraform:04_service
 
 # TODO send email action on successful deploy
 # Include commit hash and branch, as well as output from Terraform stacks
