@@ -102,9 +102,10 @@ jobs:
       # Clone source code
       - uses: actions/checkout@v1
       - run: |
-          mkdir tvm
-          git clone https://github.com/Dzhuneyt/terraform-version-manager.git
-          ./tvm/tvm 0.12.20
+          mkdir ~/tvm
+          git clone https://github.com/Dzhuneyt/terraform-version-manager.git ~/tvm
+          chmod +x ~/tvm/tvm
+          ~/tvm/tvm 0.12.20
 
       # Authenticate GitHub Actions with AWS CLI
       - name: Assume Role
