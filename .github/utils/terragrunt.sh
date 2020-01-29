@@ -8,7 +8,8 @@ test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>
 echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
 
 # Install Terragrunt & Terraform Version Manager
-brew install terragrunt tfenv
+brew install --force terragrunt tfenv
+brew link --overwrite terraform
 
 terragrunt -v
 terraform -v
