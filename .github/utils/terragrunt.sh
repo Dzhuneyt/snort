@@ -7,14 +7,8 @@ test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew
 test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
 echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
 
-# Install Terragrunt
-brew install terragrunt
+# Install Terragrunt & Terraform Version Manager
+brew install terragrunt tfenv
 
-# Install Terraform Version Manager
-brew install tfenv
-
-# Install latest Terraform
-tfenv install latest
-
-# Check Terraform version
+terragrunt -v
 terraform -v
