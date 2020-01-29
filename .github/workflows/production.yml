@@ -23,6 +23,8 @@ jobs:
       - name: Install Terragrunt and Terraform
         run: ./.github/utils/terragrunt.sh
 
+      - run: terragrunt -v
+
       - name: Install Docker Compose
         run: |
           echo Installing Docker Compose
