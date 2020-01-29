@@ -20,25 +20,10 @@ jobs:
       # Checkout the source code
       - uses: actions/checkout@v1
 
-      - run: ls ./.github/utils
+      - name: Install Terragrunt
+        run: ./.github/utils/terragrunt.sh
       - run: exit 1
-      - name: Install Terraform and Terragrunt
-        run: |
-          # Install Homebrew
-               yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
-               test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-               test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-               test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
-               echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
 
-          # Install Terraform Version Manager
-               brew install tfenv
-
-          # Install latest Terraform
-               tfenv install latest
-
-          # Check Terraform version
-               terraform -v
       - name: Install Docker Compose
         run: |
           echo Installing Docker Compose
