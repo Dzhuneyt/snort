@@ -13,34 +13,15 @@ env:
   AWS_DEFAULT_REGION: 'us-east-1'
 
 jobs:
-  deps_test:
-    name: Validate dependencies
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          # Install Homebrew
-          yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
-          test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-          test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-          test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
-          echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
-
-          # Install Terraform Version Manager
-          brew install tfenv
-
-          # Install latest Terraform
-          tfenv install latest
-
-          # Check Terraform version
-          terraform -v
   build:
-    needs: [deps_test]
     name: Build Docker images and push them to ECR
     runs-on: ubuntu-latest
     steps:
       # Checkout the source code
       - uses: actions/checkout@v1
 
+      - run: ls ./.github/utils
+      - run: exit 1
       - name: Install Terraform and Terragrunt
         run: |
           # Install Homebrew
