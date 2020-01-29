@@ -6,5 +6,5 @@ TERRAGRUNT_URL="https://github.com/gruntwork-io/terragrunt/releases/download/v0.
 wget --timestamping -O terragrunt ${TERRAGRUNT_URL}
 chmod +x terragrunt
 
-mv terragrunt /usr/local/bin
+sudo mv terragrunt /usr/local/bin
 terragrunt -v
