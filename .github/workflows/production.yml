@@ -30,7 +30,7 @@ jobs:
 
       # Authenticate GitHub Actions with the AWS CLI
       - name: Assume Role
-        uses: youyo/awscredswrap@master
+        uses: youyo/awscredswrap@v0.2.1
         with:
           role_arn: ${{ secrets.ROLE_ARN }}
           duration_seconds: 3600
@@ -63,7 +63,7 @@ jobs:
 
       # Authenticate GitHub Actions with AWS CLI
       - name: Assume Role
-        uses: youyo/awscredswrap@master
+        uses: youyo/awscredswrap@v0.2.1
         with:
           role_arn: ${{ secrets.ROLE_ARN }}
           duration_seconds: 3600
@@ -89,7 +89,7 @@ jobs:
 
       # Authenticate GitHub Actions with AWS CLI
       - name: Assume Role
-        uses: youyo/awscredswrap@master
+        uses: youyo/awscredswrap@v0.2.1
         with:
           role_arn: ${{ secrets.ROLE_ARN }}
           duration_seconds: 3600
@@ -115,7 +115,7 @@ jobs:
 
       # Authenticate GitHub Actions with AWS CLI
       - name: Assume Role
-        uses: youyo/awscredswrap@master
+        uses: youyo/awscredswrap@v0.2.1
         with:
           role_arn: ${{ secrets.ROLE_ARN }}
           duration_seconds: 3600
