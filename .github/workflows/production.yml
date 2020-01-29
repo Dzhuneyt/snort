@@ -20,6 +20,8 @@ jobs:
       # Checkout the source code
       - uses: actions/checkout@v1
 
+      - run: echo $PATH
+      - run: exit 1
       - name: Install Terragrunt and Terraform
         run: ./.github/utils/terragrunt.sh
 
