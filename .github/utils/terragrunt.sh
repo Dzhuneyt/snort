@@ -4,3 +4,5 @@ set -e
 
 git clone https://github.com/tfutils/tfenv.git ~/.tfenv
 ~/.tfenv/bin/tfenv --version
+~/.tfenv/bin/tfenv install latest
+~/.tfenv/bin/tfenv use latest
