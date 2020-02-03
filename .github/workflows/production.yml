@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - github-actions
 
 # Define env variables to be used by the
 # "youyo/awscredswrap" "Assume Role" actions below
