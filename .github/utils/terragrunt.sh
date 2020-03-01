@@ -3,6 +3,7 @@
 set -e
 
 git clone https://github.com/tfutils/tfenv.git ~/.tfenv
-~/.tfenv/bin/tfenv --version
-~/.tfenv/bin/tfenv install latest
-~/.tfenv/bin/tfenv use latest
+export PATH="$HOME/.tfenv/bin:$PATH"
+tfenv --version
+tfenv install latest
+tfenv use latest
