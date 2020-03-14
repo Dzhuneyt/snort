@@ -53,6 +53,10 @@ export class Ci extends Stack {
             },
             cache: Cache.local(LocalCacheMode.SOURCE),
         });
+        cdkBuild.addToRolePolicy(new PolicyStatement({
+            actions: ["cloudformation:*"],
+            resources: ["*"]
+        }));
 
         return {
             cdkBuild: cdkBuild,
