@@ -1,6 +1,6 @@
 import {Construct, SecretValue, Stack, StackProps} from "@aws-cdk/core";
 import {GitHubTrigger} from "@aws-cdk/aws-codepipeline-actions";
-import {BuildSpec, LinuxBuildImage, LocalCacheMode, PipelineProject} from "@aws-cdk/aws-codebuild";
+import {BuildSpec, Cache, LinuxBuildImage, LocalCacheMode, PipelineProject} from "@aws-cdk/aws-codebuild";
 import {Bucket, BucketEncryption} from "@aws-cdk/aws-s3";
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
@@ -18,8 +18,8 @@ export class Ci extends Stack {
 
     constructor(scope: Construct, id: string, props: StackProps) {
         super(scope, id, props);
-        this.createArtifacts();
-        this.createCodeBuildActions();
+        this.artifacts = this.createArtifacts();
+        this.codeBuildActions = this.createCodeBuildActions();
         this.createPipelines();
     }
 
@@ -30,7 +30,7 @@ export class Ci extends Stack {
                 phases: {
                     install: {
                         commands: [
-                            'echo $CODEBUILD_WEBHOOK_BASE_REF'
+                            'echo $CODEBUILD_WEBHOOK_BASE_REF',
                             'cd cdk && npm ci --no-audit'
                         ],
                     },
@@ -53,7 +53,7 @@ export class Ci extends Stack {
             cache: Cache.local(LocalCacheMode.SOURCE),
         });
 
-        this.codeBuildActions = {
+        return {
             cdkBuild,
         }
     }
@@ -61,7 +61,7 @@ export class Ci extends Stack {
     private createArtifacts() {
         const sourceOutput = new codepipeline.Artifact();
         const cdkDeployOutput = new codepipeline.Artifact('cdk_deploy');
-        this.artifacts = {
+        return {
             sourceOutput,
             cdkDeployOutput
         };
