@@ -6,8 +6,8 @@
   },
   "scripts": {
     "deploy": "npm run build:lambdas && npm run deploy:ci && npm run deploy:app",
-    "deploy:ci": "cdk deploy 'snort-ci-*' --require-approval=never",
-    "deploy:app": "cdk deploy 'snort-app-*' --require-approval=never",
+    "deploy:ci": "cdk deploy 'snort-ci*' --require-approval=never",
+    "deploy:app": "cdk deploy 'snort-app*' --require-approval=never",
     "build": "tsc && npm run build:lambdas",
     "build:lambdas": "npx webpack",
     "watch": "tsc -w",

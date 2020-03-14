@@ -3,6 +3,7 @@ import {GitHubTrigger} from "@aws-cdk/aws-codepipeline-actions";
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
 import {BuildSpec, LinuxBuildImage, PipelineProject} from "@aws-cdk/aws-codebuild";
+import {Bucket, BucketEncryption} from "@aws-cdk/aws-s3";
 
 export class Ci extends Stack {
 
@@ -58,7 +59,12 @@ export class Ci extends Stack {
     }
 
     private createPipelines() {
+        const artifactsbucket = new Bucket(this, 'ci-artifacts', {
+            encryption: BucketEncryption.S3_MANAGED,
+        });
         const staging = new codepipeline.Pipeline(this, 'staging', {
+            restartExecutionOnUpdate: true,
+            artifactBucket: artifactsbucket,
             stages: [
                 {
                     stageName: 'Source',
@@ -89,6 +95,8 @@ export class Ci extends Stack {
         });
 
         const production = new codepipeline.Pipeline(this, 'production', {
+            restartExecutionOnUpdate: true,
+            artifactBucket: artifactsbucket,
             stages: [
                 {
                     stageName: 'Source',

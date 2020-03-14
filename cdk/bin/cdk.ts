@@ -11,8 +11,8 @@ if (!environmentName) {
     throw new Error('STAGE environment variable parameter not present. Can not deploy');
 }
 
-new Ci(app, `snort-ci-${environmentName}`, {
-    description: 'Snort - Continuous Integration pipelines',
+new Ci(app, `snort-ci`, {
+    description: 'Snort - CI pipelines',
     env: {
         region: 'us-east-1',
     }
