@@ -9,7 +9,7 @@
     "deploy:ci": "cdk deploy 'snort-ci*' --require-approval=never",
     "deploy:app": "cdk deploy 'snort-app*' --require-approval=never",
     "build": "tsc && npm run build:lambdas",
-    "build:lambdas": "npx webpack",
+    "build:lambdas": "npx webpack -c webpack.config.js",
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk"
