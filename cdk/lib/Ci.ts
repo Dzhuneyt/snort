@@ -26,7 +26,6 @@ export class Ci extends Stack {
                 phases: {
                     install: {
                         commands: [
-                            'echo $CODEBUILD_WEBHOOK_BASE_REF',
                             'cd cdk && npm ci --no-audit'
                         ],
                     },
@@ -39,7 +38,7 @@ export class Ci extends Stack {
                 },
                 cache: {
                     paths: [
-                        '${CODEBUILD_SRC_DIR}/cdk/node_modules',
+                        'cdk/node_modules/**/*',
                         '/root/.npm/**/*'
                     ],
                 }
@@ -142,6 +141,10 @@ export class Ci extends Stack {
         });
 
         staging.addToRolePolicy(new PolicyStatement({
+            actions: ["cloudformation:*"],
+            resources: ["*"]
+        }));
+        production.addToRolePolicy(new PolicyStatement({
             actions: ["cloudformation:*"],
             resources: ["*"]
         }));
