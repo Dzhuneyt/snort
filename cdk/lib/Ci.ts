@@ -4,6 +4,7 @@ import {BuildSpec, Cache, LinuxBuildImage, LocalCacheMode, PipelineProject} from
 import {Bucket, BucketEncryption} from "@aws-cdk/aws-s3";
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
+import {PolicyStatement} from "@aws-cdk/aws-iam";
 
 export class Ci extends Stack {
 
@@ -139,6 +140,11 @@ export class Ci extends Stack {
                 },
             ],
         });
+
+        staging.addToRolePolicy(new PolicyStatement({
+            actions: ["cloudformation:*"],
+            resources: ["*"]
+        }));
 
         return {
             staging,
