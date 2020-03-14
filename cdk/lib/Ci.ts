@@ -34,7 +34,7 @@ export class Ci extends Stack {
                     build: {
                         commands: [
                             'npm run build:lambdas',
-                            'npm run cdk deploy:app'
+                            'npm run deploy:app'
                         ],
                     },
                 },
