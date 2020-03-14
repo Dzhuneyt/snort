@@ -1,139 +1,139 @@
-name: Production
-
-on:
-  push:
-    branches:
-      - master
-
-# Define env variables to be used by the
-# "youyo/awscredswrap" "Assume Role" actions below
-env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_DEFAULT_REGION: 'us-east-1'
-
-jobs:
-  build:
-    name: Build Docker images and push them to ECR
-    runs-on: ubuntu-latest
-    steps:
-      # Checkout the source code
-      - uses: actions/checkout@v1
-
-      - run: echo $PATH
-
-      - name: Install Terragrunt and Terraform
-        run: ./.github/utils/terragrunt.sh
-
-      - run: terragrunt -v
-
-      - name: Install Docker Compose
-        run: |
-          echo Installing Docker Compose
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-
-      # Authenticate GitHub Actions with the AWS CLI
-      - name: Assume Role
-        uses: youyo/awscredswrap@v0.2.1
-        with:
-          role_arn: ${{ secrets.ROLE_ARN }}
-          duration_seconds: 3600
-          role_session_name: 'awscredswrap@GitHubActions'
-
-      # Prepare Docker images
-      - name: Build Docker Images
-        run: |
-          export TAG=$(git rev-parse --short "$GITHUB_SHA")
-          # Build the images and tag them with the commit SHA1
-          npm run docker:build:prod
-
-      # Print the current account and role in GitHub Actions output for debugging purposes
-      - name: Identity Check
-        run: aws sts get-caller-identity
-
-      - name: Push Docker images to ECR
-        run: |
-          export TAG=$(git rev-parse --short "$GITHUB_SHA")
-          npm run docker:push-to-ecr
-  terraform_db:
-    name: Provision AWS infrastructure related to the database (RDS)
-    runs-on: ubuntu-latest
-    steps:
-      # Clone source code
-      - uses: actions/checkout@v1
-
-      - name: Install Terragrunt and Terraform
-        run: ./.github/utils/terragrunt.sh
-
-      # Authenticate GitHub Actions with AWS CLI
-      - name: Assume Role
-        uses: youyo/awscredswrap@v0.2.1
-        with:
-          role_arn: ${{ secrets.ROLE_ARN }}
-          duration_seconds: 3600
-          role_session_name: 'awscredswrap@GitHubActions'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-east-1'
-
-      - name: Provision Database
-        run: |
-          npm run terraform:02_database
-
-  terraform_ecs_cluster:
-    name: Provision infrastructure related to AWS ECS
-    runs-on: ubuntu-latest
-    steps:
-      # Clone source code
-      - uses: actions/checkout@v1
-
-      - name: Install Terragrunt and Terraform
-        run: ./.github/utils/terragrunt.sh
-
-      # Authenticate GitHub Actions with AWS CLI
-      - name: Assume Role
-        uses: youyo/awscredswrap@v0.2.1
-        with:
-          role_arn: ${{ secrets.ROLE_ARN }}
-          duration_seconds: 3600
-          role_session_name: 'awscredswrap@GitHubActions'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-east-1'
-
-      - name: Provision ECS cluster
-        run: npm run terraform:03_cluster
-
-  deploy:
-    name: Deploy new version of the app, using the Docker images from ECR
-    needs: [build, terraform_db, terraform_ecs_cluster]
-    runs-on: ubuntu-latest
-    steps:
-      # Clone source code
-      - uses: actions/checkout@v1
-
-      - name: Install Terragrunt and Terraform
-        run: ./.github/utils/terragrunt.sh
-
-      # Authenticate GitHub Actions with AWS CLI
-      - name: Assume Role
-        uses: youyo/awscredswrap@v0.2.1
-        with:
-          role_arn: ${{ secrets.ROLE_ARN }}
-          duration_seconds: 3600
-          role_session_name: 'awscredswrap@GitHubActions'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-east-1'
-
-      - name: Provision ECS cluster
-        run: |
-          export TF_IN_AUTOMATION=1
-          export TAG=$(git rev-parse --short "$GITHUB_SHA")
-          printf 'yes' | npm run terraform:04_service
-
-# TODO send email action on successful deploy
-# Include commit hash and branch, as well as output from Terraform stacks
+#name: Production
+#
+#on:
+#  push:
+#    branches:
+#      - master
+#
+## Define env variables to be used by the
+## "youyo/awscredswrap" "Assume Role" actions below
+#env:
+#  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#  AWS_DEFAULT_REGION: 'us-east-1'
+#
+#jobs:
+#  build:
+#    name: Build Docker images and push them to ECR
+#    runs-on: ubuntu-latest
+#    steps:
+#      # Checkout the source code
+#      - uses: actions/checkout@v1
+#
+#      - run: echo $PATH
+#
+#      - name: Install Terragrunt and Terraform
+#        run: ./.github/utils/terragrunt.sh
+#
+#      - run: terragrunt -v
+#
+#      - name: Install Docker Compose
+#        run: |
+#          echo Installing Docker Compose
+#          sudo curl -L "https://github.com/docker/compose/releases/download/1.25.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+#
+#      # Authenticate GitHub Actions with the AWS CLI
+#      - name: Assume Role
+#        uses: youyo/awscredswrap@v0.2.1
+#        with:
+#          role_arn: ${{ secrets.ROLE_ARN }}
+#          duration_seconds: 3600
+#          role_session_name: 'awscredswrap@GitHubActions'
+#
+#      # Prepare Docker images
+#      - name: Build Docker Images
+#        run: |
+#          export TAG=$(git rev-parse --short "$GITHUB_SHA")
+#          # Build the images and tag them with the commit SHA1
+#          npm run docker:build:prod
+#
+#      # Print the current account and role in GitHub Actions output for debugging purposes
+#      - name: Identity Check
+#        run: aws sts get-caller-identity
+#
+#      - name: Push Docker images to ECR
+#        run: |
+#          export TAG=$(git rev-parse --short "$GITHUB_SHA")
+#          npm run docker:push-to-ecr
+#  terraform_db:
+#    name: Provision AWS infrastructure related to the database (RDS)
+#    runs-on: ubuntu-latest
+#    steps:
+#      # Clone source code
+#      - uses: actions/checkout@v1
+#
+#      - name: Install Terragrunt and Terraform
+#        run: ./.github/utils/terragrunt.sh
+#
+#      # Authenticate GitHub Actions with AWS CLI
+#      - name: Assume Role
+#        uses: youyo/awscredswrap@v0.2.1
+#        with:
+#          role_arn: ${{ secrets.ROLE_ARN }}
+#          duration_seconds: 3600
+#          role_session_name: 'awscredswrap@GitHubActions'
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_DEFAULT_REGION: 'us-east-1'
+#
+#      - name: Provision Database
+#        run: |
+#          npm run terraform:02_database
+#
+#  terraform_ecs_cluster:
+#    name: Provision infrastructure related to AWS ECS
+#    runs-on: ubuntu-latest
+#    steps:
+#      # Clone source code
+#      - uses: actions/checkout@v1
+#
+#      - name: Install Terragrunt and Terraform
+#        run: ./.github/utils/terragrunt.sh
+#
+#      # Authenticate GitHub Actions with AWS CLI
+#      - name: Assume Role
+#        uses: youyo/awscredswrap@v0.2.1
+#        with:
+#          role_arn: ${{ secrets.ROLE_ARN }}
+#          duration_seconds: 3600
+#          role_session_name: 'awscredswrap@GitHubActions'
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_DEFAULT_REGION: 'us-east-1'
+#
+#      - name: Provision ECS cluster
+#        run: npm run terraform:03_cluster
+#
+#  deploy:
+#    name: Deploy new version of the app, using the Docker images from ECR
+#    needs: [build, terraform_db, terraform_ecs_cluster]
+#    runs-on: ubuntu-latest
+#    steps:
+#      # Clone source code
+#      - uses: actions/checkout@v1
+#
+#      - name: Install Terragrunt and Terraform
+#        run: ./.github/utils/terragrunt.sh
+#
+#      # Authenticate GitHub Actions with AWS CLI
+#      - name: Assume Role
+#        uses: youyo/awscredswrap@v0.2.1
+#        with:
+#          role_arn: ${{ secrets.ROLE_ARN }}
+#          duration_seconds: 3600
+#          role_session_name: 'awscredswrap@GitHubActions'
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_DEFAULT_REGION: 'us-east-1'
+#
+#      - name: Provision ECS cluster
+#        run: |
+#          export TF_IN_AUTOMATION=1
+#          export TAG=$(git rev-parse --short "$GITHUB_SHA")
+#          printf 'yes' | npm run terraform:04_service
+#
+## TODO send email action on successful deploy
+## Include commit hash and branch, as well as output from Terraform stacks
