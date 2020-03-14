@@ -7,10 +7,6 @@ import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
 
 export class Ci extends Stack {
 
-    private codeBuildActions: {
-        cdkBuild: PipelineProject,
-    };
-
     private artifacts: {
         sourceOutput: codepipeline.Artifact,
         cdkDeployOutput: codepipeline.Artifact,
@@ -19,11 +15,10 @@ export class Ci extends Stack {
     constructor(scope: Construct, id: string, props: StackProps) {
         super(scope, id, props);
         this.artifacts = this.createArtifacts();
-        this.codeBuildActions = this.createCodeBuildActions();
         this.createPipelines();
     }
 
-    private createCodeBuildActions() {
+    private createCodeBuildActions(environmentName: string) {
         const cdkBuild = new PipelineProject(this, 'CdkBuild', {
             buildSpec: BuildSpec.fromObject({
                 version: '0.2',
@@ -47,6 +42,11 @@ export class Ci extends Stack {
                     ],
                 }
             }),
+            environmentVariables: {
+                STAGE: {
+                    value: environmentName,
+                }
+            },
             environment: {
                 buildImage: LinuxBuildImage.STANDARD_2_0,
             },
@@ -54,7 +54,7 @@ export class Ci extends Stack {
         });
 
         return {
-            cdkBuild,
+            cdkBuild: cdkBuild,
         }
     }
 
@@ -71,6 +71,10 @@ export class Ci extends Stack {
         const artifactsbucket = new Bucket(this, 'ci-artifacts', {
             encryption: BucketEncryption.S3_MANAGED,
         });
+
+        const actionsStaging = this.createCodeBuildActions('staging');
+        const actionsProduction = this.createCodeBuildActions("production");
+
         const staging = new codepipeline.Pipeline(this, 'staging', {
             restartExecutionOnUpdate: true,
             artifactBucket: artifactsbucket,
@@ -94,7 +98,7 @@ export class Ci extends Stack {
                     actions: [
                         new codepipeline_actions.CodeBuildAction({
                             actionName: 'CDK_Deploy',
-                            project: this.codeBuildActions.cdkBuild,
+                            project: actionsStaging.cdkBuild,
                             input: this.artifacts.sourceOutput,
                             outputs: [this.artifacts.cdkDeployOutput],
                         }),
@@ -126,7 +130,7 @@ export class Ci extends Stack {
                     actions: [
                         new codepipeline_actions.CodeBuildAction({
                             actionName: 'CDK_Deploy',
-                            project: this.codeBuildActions.cdkBuild,
+                            project: actionsProduction.cdkBuild,
                             input: this.artifacts.sourceOutput,
                             outputs: [this.artifacts.cdkDeployOutput],
                         }),
