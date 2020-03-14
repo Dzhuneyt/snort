@@ -38,6 +38,7 @@ export class Ci extends Stack {
                 },
                 cache: {
                     paths: [
+                        '${CODEBUILD_SRC_DIR}/cdk/node_modules',
                         '/root/.npm/**/*'
                     ],
                 }
