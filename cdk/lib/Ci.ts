@@ -19,7 +19,7 @@ export class Ci extends Stack {
     }
 
     private createCodeBuildActions(environmentName: string) {
-        const cdkBuild = new PipelineProject(this, 'CdkBuild', {
+        const cdkBuild = new PipelineProject(this, `${environmentName}-cdk-build`, {
             buildSpec: BuildSpec.fromObject({
                 version: '0.2',
                 phases: {
