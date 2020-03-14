@@ -2,6 +2,7 @@
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
 import {IamStack} from '../lib/iamStack';
+import {Snort} from "../lib/Snort";
 
 const app = new cdk.App();
 
@@ -11,5 +12,11 @@ new IamStack(app, 'snort-iam', {
     env: {
         region: 'us-east-1',
         account: process.env.CDK_DEFAULT_ACCOUNT,
+    }
+});
+new Snort(app, 'snort-app', {
+    description: 'Snort app',
+    env: {
+        region: 'us-east-1',
     }
 });
