@@ -1,9 +1,9 @@
 import {Construct, SecretValue, Stack, StackProps} from "@aws-cdk/core";
 import {GitHubTrigger} from "@aws-cdk/aws-codepipeline-actions";
+import {BuildSpec, LinuxBuildImage, LocalCacheMode, PipelineProject} from "@aws-cdk/aws-codebuild";
+import {Bucket, BucketEncryption} from "@aws-cdk/aws-s3";
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
-import {BuildSpec, LinuxBuildImage, PipelineProject} from "@aws-cdk/aws-codebuild";
-import {Bucket, BucketEncryption} from "@aws-cdk/aws-s3";
 
 export class Ci extends Stack {
 
@@ -29,7 +29,10 @@ export class Ci extends Stack {
                 version: '0.2',
                 phases: {
                     install: {
-                        commands: 'cd cdk && npm ci --no-audit',
+                        commands: [
+                            'echo $CODEBUILD_WEBHOOK_BASE_REF'
+                            'cd cdk && npm ci --no-audit'
+                        ],
                     },
                     build: {
                         commands: [
@@ -38,10 +41,16 @@ export class Ci extends Stack {
                         ],
                     },
                 },
+                cache: {
+                    paths: [
+                        '/root/.npm/**/*'
+                    ],
+                }
             }),
             environment: {
                 buildImage: LinuxBuildImage.STANDARD_2_0,
             },
+            cache: Cache.local(LocalCacheMode.SOURCE),
         });
 
         this.codeBuildActions = {
