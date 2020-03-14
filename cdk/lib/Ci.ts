@@ -54,7 +54,7 @@ export class Ci extends Stack {
             cache: Cache.local(LocalCacheMode.SOURCE),
         });
         cdkBuild.addToRolePolicy(new PolicyStatement({
-            actions: ["cloudformation:*"],
+            actions: ["*"],
             resources: ["*"]
         }));
 
@@ -143,15 +143,6 @@ export class Ci extends Stack {
                 },
             ],
         });
-
-        staging.addToRolePolicy(new PolicyStatement({
-            actions: ["cloudformation:*"],
-            resources: ["*"]
-        }));
-        production.addToRolePolicy(new PolicyStatement({
-            actions: ["cloudformation:*"],
-            resources: ["*"]
-        }));
 
         return {
             staging,
