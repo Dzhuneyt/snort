@@ -28,7 +28,7 @@ export class Ci extends Stack {
                 version: '0.2',
                 phases: {
                     install: {
-                        commands: 'cd cdk && npm i --no-audit',
+                        commands: 'cd cdk && npm ci --no-audit',
                     },
                     build: {
                         commands: [
