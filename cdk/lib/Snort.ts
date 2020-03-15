@@ -99,6 +99,8 @@ export class Snort extends cdk.Stack {
         const bucket = new Bucket(this, 'frontend', {
             accessControl: BucketAccessControl.PUBLIC_READ,
             publicReadAccess: true,
+            websiteIndexDocument: 'index.html',
+            websiteErrorDocument: 'error.html'
         });
         new CfnOutput(this, 'frontend-url', {
             value: bucket.bucketWebsiteUrl,
