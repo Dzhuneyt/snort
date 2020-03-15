@@ -3,5 +3,5 @@ if (!process.env.BACKEND_URL) {
 }
 export const environment = {
   production: true,
-  backend: process.env.BACKEND_URL,
+  backend: '${BACKEND_URL}',
 };
