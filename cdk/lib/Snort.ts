@@ -1,5 +1,5 @@
 import * as cdk from '@aws-cdk/core';
-import {RemovalPolicy} from '@aws-cdk/core';
+import {CfnOutput, RemovalPolicy} from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import {Code} from '@aws-cdk/aws-lambda';
 import * as apigateway from '@aws-cdk/aws-apigateway';
@@ -8,6 +8,7 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import {BillingMode, Table} from '@aws-cdk/aws-dynamodb';
 import {RetentionDays} from "@aws-cdk/aws-logs";
 import {CorsOptions} from "@aws-cdk/aws-apigateway/lib/cors";
+import {BlockPublicAccess, Bucket, BucketAccessControl} from "@aws-cdk/aws-s3";
 
 interface Lambdas {
     urlSaveLambda: lambda.Function,
@@ -23,6 +24,7 @@ export class Snort extends cdk.Stack {
         this.createDynamoTable();
         this.createLambdas();
         this.createApiGateway();
+        this.createFrontendBucket();
     }
 
     private createLambdas() {
@@ -91,5 +93,15 @@ export class Snort extends cdk.Stack {
             billingMode: BillingMode.PAY_PER_REQUEST,
             removalPolicy: RemovalPolicy.DESTROY,
         });
+    }
+
+    private createFrontendBucket() {
+        const bucket = new Bucket(this, 'frontend', {
+            accessControl: BucketAccessControl.PUBLIC_READ,
+            publicReadAccess: true,
+        });
+        new CfnOutput(this, 'frontend', {
+            value: bucket.bucketWebsiteUrl,
+        })
     }
 }

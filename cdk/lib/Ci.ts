@@ -35,8 +35,10 @@ export class Ci extends Stack {
                             'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=productionapiEndpoint --fromStack=snort-app-production)',
                             'echo Backend URL is ${BACKEND_URL}',
 
-                            'echo Deploying CDK infrastructure',
-                            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas',
+                            'echo Deploying CI infrastructure',
+                            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci',
+
+                            'echo Deploying APP infrastructure',
                             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
 
                             'echo Building frontend',
