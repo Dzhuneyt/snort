@@ -10,7 +10,7 @@ export class Ci extends Stack {
 
     private artifacts: {
         sourceOutput: codepipeline.Artifact,
-        cdkDeployOutput: codepipeline.Artifact,
+        deploy: codepipeline.Artifact,
     };
 
     constructor(scope: Construct, id: string, props: StackProps) {
@@ -22,16 +22,17 @@ export class Ci extends Stack {
     private createCodeBuildActions(environmentName: string) {
 
         const buildCommands = [
-            // @TODO parameterize these, read STAGE variable
-            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=${STAGE}apiEndpoint --fromStack=snort-app-${STAGE})',
-            'echo Backend URL is ${BACKEND_URL}',
-
             // CI Self provision on master branch commits
             environmentName === 'production' ? 'echo Deploying CI infrastructure' : null,
             environmentName === 'production' ? 'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci' : null,
 
             'echo Deploying APP infrastructure',
             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
+
+            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=${STAGE}apiEndpoint --fromStack=snort-app-${STAGE})',
+            'export BUCKET_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendurl --fromStack=snort-app-${STAGE})',
+            'echo Backend URL is ${BACKEND_URL}',
+            'echo Frontend URL is ${BUCKET_URL}',
 
             'echo Building frontend',
             'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
@@ -42,10 +43,6 @@ export class Ci extends Stack {
             'export BUCKET_NAME=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendbucket --fromStack=snort-app-${STAGE})',
             'echo Target S3 bucket is ${BUCKET_NAME}',
             'cd ${CODEBUILD_SRC_DIR}/frontend && aws s3 cp ./dist/frontend s3://${BUCKET_NAME} --recursive',
-
-            'export BUCKET_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendurl --fromStack=snort-app-${STAGE})',
-            'echo Frontend built and deployed to S3 bucket',
-            'echo You can view it at ${BUCKET_URL}',
         ].filter(value => value !== null);
 
 
@@ -93,10 +90,10 @@ export class Ci extends Stack {
 
     private createArtifacts() {
         const sourceOutput = new codepipeline.Artifact();
-        const cdkDeployOutput = new codepipeline.Artifact('cdk_deploy');
+        const deploy = new codepipeline.Artifact('deploy');
         return {
             sourceOutput,
-            cdkDeployOutput
+            deploy: deploy
         };
     }
 
@@ -133,7 +130,7 @@ export class Ci extends Stack {
                             actionName: 'CDK_Deploy',
                             project: actionsStaging.cdkBuild,
                             input: this.artifacts.sourceOutput,
-                            outputs: [this.artifacts.cdkDeployOutput],
+                            outputs: [this.artifacts.deploy],
                         }),
                     ],
                 },
@@ -162,10 +159,10 @@ export class Ci extends Stack {
                     stageName: 'Build',
                     actions: [
                         new codepipeline_actions.CodeBuildAction({
-                            actionName: 'CDK_Deploy',
+                            actionName: 'Deploy',
                             project: actionsProduction.cdkBuild,
                             input: this.artifacts.sourceOutput,
-                            outputs: [this.artifacts.cdkDeployOutput],
+                            outputs: [this.artifacts.deploy],
                         }),
                     ],
                 },
