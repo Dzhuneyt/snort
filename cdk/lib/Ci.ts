@@ -66,6 +66,7 @@ export class Ci extends Stack {
                 cache: {
                     paths: [
                         'cdk/node_modules/**/*',
+                        'frontend/node_modules/**/*',
                         '/root/.npm/**/*'
                     ],
                 }
