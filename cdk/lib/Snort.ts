@@ -65,6 +65,7 @@ export class Snort extends cdk.Stack {
             disableCache: true,
         };
         const api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
+            endpointExportName: 'backend-url',
             retainDeployments: false,
             defaultMethodOptions: {
                 authorizationType: AuthorizationType.NONE,
@@ -72,6 +73,11 @@ export class Snort extends cdk.Stack {
             },
             defaultCorsPreflightOptions: defaultCors,
         });
+
+        new CfnOutput(this, 'backend-url', {
+            value: api.url
+        });
+
         api.root.addMethod('ANY');
 
         const apiUrlsResource = api.root.addResource('urls', {
@@ -104,9 +110,9 @@ export class Snort extends cdk.Stack {
         });
         new CfnOutput(this, 'frontend-url', {
             value: bucket.bucketWebsiteUrl,
-        })
+        });
         new CfnOutput(this, 'frontend-bucket', {
             value: bucket.bucketName,
-        })
+        });
     }
 }

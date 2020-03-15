@@ -29,7 +29,7 @@ export class Ci extends Stack {
             'echo Deploying APP infrastructure',
             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
 
-            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=${STAGE}apiEndpoint --fromStack=snort-app-${STAGE})',
+            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=backendurl --fromStack=snort-app-${STAGE})',
             'export BUCKET_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendurl --fromStack=snort-app-${STAGE})',
             'echo Backend URL is ${BACKEND_URL}',
             'echo Frontend URL is ${BUCKET_URL}',

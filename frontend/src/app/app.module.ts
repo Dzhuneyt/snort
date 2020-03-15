@@ -14,6 +14,7 @@ import {environment} from "../environments/environment";
 import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
 import {BackendInterceptor} from "./backend.interceptor";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 
 @NgModule({
   declarations: [
@@ -28,12 +29,13 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
     FlexLayoutModule,
     HttpClientModule,
     ReactiveFormsModule,
+    FormsModule,
 
     // Material modules
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
-    FormsModule,
+    MatProgressSpinnerModule,
   ],
   providers: [
     {provide: "BASE_API_URL", useValue: environment.backend},
