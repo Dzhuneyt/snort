@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   // @ts-ignore
-  backend: process.env.BACKEND_URL ? process.env.BACKEND_URL : 'https://052nyi4pbk.execute-api.us-east-1.amazonaws.com/prod/',
+  backend: 'https://052nyi4pbk.execute-api.us-east-1.amazonaws.com/prod/',
 };
 
 /*
