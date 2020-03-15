@@ -46,7 +46,7 @@ export class Ci extends Stack {
                             'echo Building frontend',
                             'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
                             'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL=${BACKEND_URL} npm run ci:replace-env-vars',
-                            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build',
+                            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
 
                             'echo Uploading frontend to S3',
                             'export BUCKET_NAME=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendurl --fromStack=snort-app-${STAGE})',
