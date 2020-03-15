@@ -100,7 +100,7 @@ export class Snort extends cdk.Stack {
             accessControl: BucketAccessControl.PUBLIC_READ,
             publicReadAccess: true,
         });
-        new CfnOutput(this, 'frontend', {
+        new CfnOutput(this, 'frontend-url', {
             value: bucket.bucketWebsiteUrl,
         })
     }

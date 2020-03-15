@@ -32,9 +32,11 @@ export class Ci extends Stack {
                     },
                     build: {
                         commands: [
-                            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=productionapiEndpoint --fromStack=snort-app-production)',
+                            // @TODO parameterize these, read STAGE variable
+                            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=${STAGE}apiEndpoint --fromStack=snort-app-${STAGE})',
                             'echo Backend URL is ${BACKEND_URL}',
 
+                            // @TODO This should happen only on Master branch
                             'echo Deploying CI infrastructure',
                             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci',
 
