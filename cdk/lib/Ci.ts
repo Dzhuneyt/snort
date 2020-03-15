@@ -20,6 +20,35 @@ export class Ci extends Stack {
     }
 
     private createCodeBuildActions(environmentName: string) {
+
+        const buildCommands = [
+            // @TODO parameterize these, read STAGE variable
+            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=${STAGE}apiEndpoint --fromStack=snort-app-${STAGE})',
+            'echo Backend URL is ${BACKEND_URL}',
+
+            // CI Self provision on master branch commits
+            environmentName === 'production' ? 'echo Deploying CI infrastructure' : null,
+            environmentName === 'production' ? 'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci' : null,
+
+            'echo Deploying APP infrastructure',
+            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
+
+            'echo Building frontend',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL=${BACKEND_URL} npm run ci:replace-env-vars',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
+
+            'echo Uploading frontend to S3',
+            'export BUCKET_NAME=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendbucket --fromStack=snort-app-${STAGE})',
+            'echo Target S3 bucket is ${BUCKET_NAME}',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && aws s3 cp ./dist/frontend s3://${BUCKET_NAME} --recursive',
+
+            'export BUCKET_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendurl --fromStack=snort-app-${STAGE})',
+            'echo Frontend built and deployed to S3 bucket',
+            'echo You can view it at ${BUCKET_URL}',
+        ].filter(value => value !== null);
+
+
         const cdkBuild = new PipelineProject(this, `${environmentName}-cdk-build`, {
             buildSpec: BuildSpec.fromObject({
                 version: '0.2',
@@ -31,29 +60,7 @@ export class Ci extends Stack {
                         ],
                     },
                     build: {
-                        commands: [
-                            // @TODO parameterize these, read STAGE variable
-                            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=${STAGE}apiEndpoint --fromStack=snort-app-${STAGE})',
-                            'echo Backend URL is ${BACKEND_URL}',
-
-                            // @TODO This should happen only on Master branch
-                            'echo Deploying CI infrastructure',
-                            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci',
-
-                            'echo Deploying APP infrastructure',
-                            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
-
-                            'echo Building frontend',
-                            'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
-                            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL=${BACKEND_URL} npm run ci:replace-env-vars',
-                            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
-
-                            'echo Uploading frontend to S3',
-                            'export BUCKET_NAME=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendbucket --fromStack=snort-app-${STAGE})',
-                            'echo Target S3 bucket is ${BUCKET_NAME}',
-                            'cd ${CODEBUILD_SRC_DIR}/frontend && aws s3 cp ./dist/frontend s3://${BUCKET_NAME} --recursive'
-
-                        ],
+                        commands: buildCommands,
                     },
                 },
                 cache: {
