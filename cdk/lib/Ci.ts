@@ -26,15 +26,16 @@ export class Ci extends Stack {
                 phases: {
                     install: {
                         commands: [
-                            'cd cdk && npm ci --no-audit'
+                            'cd ${CODEBUILD_SRC_DIR} && npm ci --no-audit',
+                            'cd ${CODEBUILD_SRC_DIR}/cdk && npm ci --no-audit',
                         ],
                     },
                     build: {
                         commands: [
-                            'cd .. && npx aws-cdk-output --name=productionapiEndpoint --fromStack=snort-app-production',
-                            'cd cdk',
-                            'npm run build:lambdas',
-                            'npm run deploy:app',
+                            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=productionapiEndpoint --fromStack=snort-app-production)',
+                            'echo $BACKEND_URL',
+                            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas',
+                            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
                         ],
                     },
                 },
