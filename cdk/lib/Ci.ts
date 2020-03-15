@@ -31,8 +31,10 @@ export class Ci extends Stack {
                     },
                     build: {
                         commands: [
+                            'cd .. && npx aws-cdk-output --name=productionapiEndpoint --fromStack=snort-app-production',
+                            'cd cdk',
                             'npm run build:lambdas',
-                            'npm run deploy:app'
+                            'npm run deploy:app',
                         ],
                     },
                 },

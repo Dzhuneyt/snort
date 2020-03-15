@@ -30,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/Dzhuneyt/snort/issues"
   },
-  "homepage": "https://github.com/Dzhuneyt/snort#readme"
+  "homepage": "https://github.com/Dzhuneyt/snort#readme",
+  "dependencies": {
+    "aws-cdk-output": "^1.0.15"
+  }
 }
