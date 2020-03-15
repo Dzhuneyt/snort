@@ -103,5 +103,8 @@ export class Snort extends cdk.Stack {
         new CfnOutput(this, 'frontend-url', {
             value: bucket.bucketWebsiteUrl,
         })
+        new CfnOutput(this, 'frontend-bucket', {
+            value: bucket.bucketName,
+        })
     }
 }

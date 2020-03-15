@@ -49,7 +49,7 @@ export class Ci extends Stack {
                             'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
 
                             'echo Uploading frontend to S3',
-                            'export BUCKET_NAME=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendurl --fromStack=snort-app-${STAGE})',
+                            'export BUCKET_NAME=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendbucket --fromStack=snort-app-${STAGE})',
                             'echo Target S3 bucket is ${BUCKET_NAME}',
                             'cd ${CODEBUILD_SRC_DIR}/frontend && aws s3 cp s3://${BUCKET_NAME} ./dist/frontend --recursive'
 
