@@ -6,6 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "build:prod": "ng build --prod",
+    "ci:replace-env-vars": "npx ts-node ./scripts/replace-env-vars.ts",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

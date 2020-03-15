@@ -41,6 +41,7 @@ export class Ci extends Stack {
 
                             'echo Building frontend',
                             'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
+                            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL=${BACKEND_URL} npm run ci:replace-env-vars',
                             'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build'
 
                         ],
