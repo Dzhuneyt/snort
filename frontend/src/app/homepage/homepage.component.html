@@ -1,3 +1,23 @@
-<p>
-  homepage works!
-</p>
+<div class="wrapper" fxLayout="column">
+  <mat-form-field
+    appearance="legacy"
+    style="width: 720px;"
+    fxFlex
+    fxFlexAlign="center"
+  >
+    <mat-label>URL to be shortened</mat-label>
+    <input matInput placeholder="http://" (keydown)="onKeydown($event)" [(ngModel)]="url">
+  </mat-form-field>
+
+
+  <mat-form-field
+    *ngIf="shortened"
+    appearance="legacy"
+    style="width: 300px; margin-top: 2em;"
+    fxFlex
+    fxFlexAlign="center"
+  >
+    <mat-label>Shortened URL:</mat-label>
+    <input [value]="shortened" matInput placeholder="">
+  </mat-form-field>
+</div>

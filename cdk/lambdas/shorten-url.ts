@@ -35,8 +35,14 @@ export const handler = async (event: any) => {
         id
     };
 
+    const headers = {
+        "Access-Control-Allow-Origin": "*", // Required for CORS support to work
+        "Access-Control-Allow-Credentials": true // Required for cookies, authorization headers with HTTPS
+    };
+
     return {
         statusCode: 200,
+        headers,
         body: JSON.stringify(response)
     };
 };

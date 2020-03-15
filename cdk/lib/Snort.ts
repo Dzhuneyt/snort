@@ -7,6 +7,7 @@ import {AuthorizationType, LambdaIntegration} from '@aws-cdk/aws-apigateway';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import {BillingMode, Table} from '@aws-cdk/aws-dynamodb';
 import {RetentionDays} from "@aws-cdk/aws-logs";
+import {CorsOptions} from "@aws-cdk/aws-apigateway/lib/cors";
 
 interface Lambdas {
     urlSaveLambda: lambda.Function,
@@ -55,26 +56,33 @@ export class Snort extends cdk.Stack {
     }
 
     private createApiGateway() {
-        const api = new apigateway.RestApi(this, 'api', {
+        const defaultCors: CorsOptions = {
+            allowHeaders: ['*'],
+            allowOrigins: apigateway.Cors.ALL_ORIGINS,
+            allowMethods: apigateway.Cors.ALL_METHODS,
+            disableCache: true,
+        };
+        const api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
+            retainDeployments: false,
             defaultMethodOptions: {
                 authorizationType: AuthorizationType.NONE,
                 apiKeyRequired: false,
             },
-            defaultCorsPreflightOptions: {
-                allowOrigins: apigateway.Cors.ALL_ORIGINS,
-                allowMethods: apigateway.Cors.ALL_METHODS // this is also the default
-            }
+            defaultCorsPreflightOptions: defaultCors,
         });
         api.root.addMethod('ANY');
 
         const apiUrlsResource = api.root.addResource('urls', {
+            defaultCorsPreflightOptions: defaultCors,
             defaultMethodOptions: {
                 apiKeyRequired: false,
                 authorizationType: AuthorizationType.NONE,
             }
         });
         apiUrlsResource.addMethod('POST', new LambdaIntegration(this.lambdas.urlSaveLambda));
-        apiUrlsResource.addResource('{id}').addMethod('GET', new LambdaIntegration(this.lambdas.urlGetLambda));
+        apiUrlsResource.addResource('{id}', {
+            defaultCorsPreflightOptions: defaultCors,
+        }).addMethod('GET', new LambdaIntegration(this.lambdas.urlGetLambda));
     }
 
     private createDynamoTable() {
