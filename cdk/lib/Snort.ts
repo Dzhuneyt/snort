@@ -1,26 +1,39 @@
 import * as cdk from '@aws-cdk/core';
-import {CfnOutput, RemovalPolicy} from '@aws-cdk/core';
+import {CfnOutput, Duration, RemovalPolicy, StackProps} from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import {Code} from '@aws-cdk/aws-lambda';
 import * as apigateway from '@aws-cdk/aws-apigateway';
-import {AuthorizationType, LambdaIntegration} from '@aws-cdk/aws-apigateway';
+import {AuthorizationType, EndpointType, LambdaIntegration, RestApi} from '@aws-cdk/aws-apigateway';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import {BillingMode, Table} from '@aws-cdk/aws-dynamodb';
 import {RetentionDays} from "@aws-cdk/aws-logs";
 import {CorsOptions} from "@aws-cdk/aws-apigateway/lib/cors";
-import {BlockPublicAccess, Bucket, BucketAccessControl} from "@aws-cdk/aws-s3";
+import {Bucket, BucketAccessControl} from "@aws-cdk/aws-s3";
+import {ARecord, HostedZone, IHostedZone, RecordTarget} from "@aws-cdk/aws-route53";
+import {ApiGateway} from "@aws-cdk/aws-route53-targets";
+import {Certificate, DnsValidatedCertificate, ICertificate, ValidationMethod} from "@aws-cdk/aws-certificatemanager";
+import {AutoDeleteBucket} from '@mobileposse/auto-delete-bucket';
+
 
 interface Lambdas {
     urlSaveLambda: lambda.Function,
     urlGetLambda: lambda.Function,
 }
 
+export interface Props extends StackProps {
+    route53: IHostedZone,
+    route53certificate: ICertificate,
+}
+
 export class Snort extends cdk.Stack {
     private table: Table;
     private lambdas: Lambdas;
+    private api: RestApi;
+    private props: Props;
 
-    constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+    constructor(scope: cdk.Construct, id: string, props: Props) {
         super(scope, id, props);
+        this.props = props;
         this.createDynamoTable();
         this.createLambdas();
         this.createApiGateway();
@@ -64,7 +77,13 @@ export class Snort extends cdk.Stack {
             allowMethods: apigateway.Cors.ALL_METHODS,
             disableCache: true,
         };
-        const api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
+
+        this.api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
+            domainName: {
+                domainName: process.env.STAGE + '.snort.cc',
+                certificate: this.props.route53certificate,
+                endpointType: EndpointType.EDGE,
+            },
             endpointExportName: 'backend-url',
             retainDeployments: false,
             defaultMethodOptions: {
@@ -75,12 +94,12 @@ export class Snort extends cdk.Stack {
         });
 
         new CfnOutput(this, 'backend-url', {
-            value: api.url
+            value: this.api.url
         });
 
-        api.root.addMethod('ANY');
+        this.api.root.addMethod('ANY');
 
-        const apiUrlsResource = api.root.addResource('urls', {
+        const apiUrlsResource = this.api.root.addResource('urls', {
             defaultCorsPreflightOptions: defaultCors,
             defaultMethodOptions: {
                 apiKeyRequired: false,
@@ -91,6 +110,13 @@ export class Snort extends cdk.Stack {
         apiUrlsResource.addResource('{id}', {
             defaultCorsPreflightOptions: defaultCors,
         }).addMethod('GET', new LambdaIntegration(this.lambdas.urlGetLambda));
+
+        new ARecord(this, process.env.STAGE + '-domain-a-record', {
+            zone: this.props.route53,
+            recordName: process.env.STAGE,
+            ttl: Duration.seconds(10),
+            target: RecordTarget.fromAlias(new ApiGateway(this.api))
+        });
     }
 
     private createDynamoTable() {
@@ -102,12 +128,18 @@ export class Snort extends cdk.Stack {
     }
 
     private createFrontendBucket() {
-        const bucket = new Bucket(this, 'frontend', {
+        const bucket = new AutoDeleteBucket(this, 'frontend', {
             accessControl: BucketAccessControl.PUBLIC_READ,
             publicReadAccess: true,
             websiteIndexDocument: 'index.html',
             websiteErrorDocument: 'index.html'
         });
+        // const bucket = new Bucket(this, 'frontend', {
+        //     accessControl: BucketAccessControl.PUBLIC_READ,
+        //     publicReadAccess: true,
+        //     websiteIndexDocument: 'index.html',
+        //     websiteErrorDocument: 'index.html'
+        // });
         new CfnOutput(this, 'frontend-url', {
             value: bucket.bucketWebsiteUrl,
         });
