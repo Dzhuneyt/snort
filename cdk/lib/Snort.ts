@@ -78,12 +78,21 @@ export class Snort extends cdk.Stack {
             disableCache: true,
         };
 
+        const certificate = new DnsValidatedCertificate(this, 'certificate', {
+            domainName: 'snort.cc',
+            hostedZone: this.props.route53,
+            subjectAlternativeNames: [
+                "production.snort.cc",
+                "staging.snort.cc",
+            ],
+        });
+
         this.api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
-            // domainName: {
-            //     domainName: process.env.STAGE + '.snort.cc',
-            //     certificate: this.props.route53certificate,
-            //     endpointType: EndpointType.EDGE,
-            // },
+            domainName: {
+                domainName: process.env.STAGE + '.snort.cc',
+                certificate: certificate,
+                endpointType: EndpointType.EDGE,
+            },
             endpointExportName: 'backend-url',
             retainDeployments: false,
             defaultMethodOptions: {
