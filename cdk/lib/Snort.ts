@@ -79,11 +79,11 @@ export class Snort extends cdk.Stack {
         };
 
         this.api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
-            domainName: {
-                domainName: process.env.STAGE + '.snort.cc',
-                certificate: this.props.route53certificate,
-                endpointType: EndpointType.EDGE,
-            },
+            // domainName: {
+            //     domainName: process.env.STAGE + '.snort.cc',
+            //     certificate: this.props.route53certificate,
+            //     endpointType: EndpointType.EDGE,
+            // },
             endpointExportName: 'backend-url',
             retainDeployments: false,
             defaultMethodOptions: {
@@ -111,12 +111,12 @@ export class Snort extends cdk.Stack {
             defaultCorsPreflightOptions: defaultCors,
         }).addMethod('GET', new LambdaIntegration(this.lambdas.urlGetLambda));
 
-        new ARecord(this, process.env.STAGE + '-domain-a-record', {
-            zone: this.props.route53,
-            recordName: process.env.STAGE,
-            ttl: Duration.seconds(10),
-            target: RecordTarget.fromAlias(new ApiGateway(this.api))
-        });
+        // new ARecord(this, process.env.STAGE + '-domain-a-record', {
+        //     zone: this.props.route53,
+        //     recordName: process.env.STAGE,
+        //     ttl: Duration.seconds(10),
+        //     target: RecordTarget.fromAlias(new ApiGateway(this.api))
+        // });
     }
 
     private createDynamoTable() {

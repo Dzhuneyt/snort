@@ -6,6 +6,7 @@
   },
   "scripts": {
     "deploy": "npm run deploy:ci && npm run deploy:app",
+    "deploy:domain": "npm run build:lambdas && cdk deploy 'snort-route53*' --require-approval=never",
     "deploy:ci": "npm run build:lambdas && cdk deploy 'snort-ci*' --require-approval=never",
     "deploy:app": "npm run build:lambdas && cdk deploy 'snort-app*' --require-approval=never",
     "build": "tsc && npm run build:lambdas",
