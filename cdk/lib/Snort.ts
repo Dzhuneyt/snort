@@ -1,5 +1,5 @@
 import * as cdk from '@aws-cdk/core';
-import {CfnOutput, Duration, RemovalPolicy, StackProps} from '@aws-cdk/core';
+import {CfnOutput, RemovalPolicy, StackProps} from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import {Code} from '@aws-cdk/aws-lambda';
 import * as apigateway from '@aws-cdk/aws-apigateway';
@@ -8,10 +8,9 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import {BillingMode, Table} from '@aws-cdk/aws-dynamodb';
 import {RetentionDays} from "@aws-cdk/aws-logs";
 import {CorsOptions} from "@aws-cdk/aws-apigateway/lib/cors";
-import {Bucket, BucketAccessControl} from "@aws-cdk/aws-s3";
-import {ARecord, HostedZone, IHostedZone, RecordTarget} from "@aws-cdk/aws-route53";
-import {ApiGateway} from "@aws-cdk/aws-route53-targets";
-import {Certificate, DnsValidatedCertificate, ICertificate, ValidationMethod} from "@aws-cdk/aws-certificatemanager";
+import {BucketAccessControl} from "@aws-cdk/aws-s3";
+import {IHostedZone} from "@aws-cdk/aws-route53";
+import {Certificate, ICertificate, ValidationMethod} from "@aws-cdk/aws-certificatemanager";
 import {AutoDeleteBucket} from '@mobileposse/auto-delete-bucket';
 
 
@@ -78,22 +77,22 @@ export class Snort extends cdk.Stack {
             disableCache: true,
         };
 
-        const certificate = new DnsValidatedCertificate(this, 'certificate', {
-            domainName: 'snort.cc',
-            hostedZone: this.props.route53,
-            subjectAlternativeNames: [
-                "production.snort.cc",
-                "staging.snort.cc",
-            ],
-        });
+        // const certificate = new DnsValidatedCertificate(this, 'certificate', {
+        //     domainName: 'snort.cc',
+        //     hostedZone: this.props.route53,
+        //     subjectAlternativeNames: [
+        //         "production.snort.cc",
+        //         "staging.snort.cc",
+        //     ],
+        // });
 
         this.api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
             domainName: {
                 domainName: process.env.STAGE + '.snort.cc',
-                certificate: certificate,
+                certificate: this.props.route53certificate,
                 endpointType: EndpointType.EDGE,
             },
-            endpointExportName: 'backend-url',
+            endpointExportName: `${process.env.STAGE}-backend-url`,
             retainDeployments: false,
             defaultMethodOptions: {
                 authorizationType: AuthorizationType.NONE,
@@ -103,7 +102,7 @@ export class Snort extends cdk.Stack {
         });
 
         new CfnOutput(this, 'backend-url', {
-            value: this.api.url
+            value: this.api.url,
         });
 
         this.api.root.addMethod('ANY');
