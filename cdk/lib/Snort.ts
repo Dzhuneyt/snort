@@ -1,5 +1,5 @@
 import * as cdk from '@aws-cdk/core';
-import {CfnOutput, RemovalPolicy, StackProps} from '@aws-cdk/core';
+import {CfnOutput, Duration, RemovalPolicy, StackProps} from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import {Code} from '@aws-cdk/aws-lambda';
 import * as apigateway from '@aws-cdk/aws-apigateway';
@@ -9,9 +9,11 @@ import {BillingMode, Table} from '@aws-cdk/aws-dynamodb';
 import {RetentionDays} from "@aws-cdk/aws-logs";
 import {CorsOptions} from "@aws-cdk/aws-apigateway/lib/cors";
 import {BucketAccessControl} from "@aws-cdk/aws-s3";
-import {IHostedZone} from "@aws-cdk/aws-route53";
-import {Certificate, ICertificate, ValidationMethod} from "@aws-cdk/aws-certificatemanager";
+import {ARecord, HostedZone, IHostedZone, RecordTarget} from "@aws-cdk/aws-route53";
+import {ICertificate} from "@aws-cdk/aws-certificatemanager";
 import {AutoDeleteBucket} from '@mobileposse/auto-delete-bucket';
+import {CloudFrontAllowedMethods, CloudFrontWebDistribution, ViewerCertificate} from "@aws-cdk/aws-cloudfront";
+import {CloudFrontTarget} from "@aws-cdk/aws-route53-targets";
 
 
 interface Lambdas {
@@ -29,6 +31,8 @@ export class Snort extends cdk.Stack {
     private lambdas: Lambdas;
     private api: RestApi;
     private props: Props;
+    private bucket: AutoDeleteBucket;
+    private cloudFrontDistribution: CloudFrontWebDistribution;
 
     constructor(scope: cdk.Construct, id: string, props: Props) {
         super(scope, id, props);
@@ -37,6 +41,8 @@ export class Snort extends cdk.Stack {
         this.createLambdas();
         this.createApiGateway();
         this.createFrontendBucket();
+        this.createCloudfront();
+        this.attachRoute53ToCloudfront();
     }
 
     private createLambdas() {
@@ -136,7 +142,7 @@ export class Snort extends cdk.Stack {
     }
 
     private createFrontendBucket() {
-        const bucket = new AutoDeleteBucket(this, 'frontend', {
+        this.bucket = new AutoDeleteBucket(this, 'frontend', {
             accessControl: BucketAccessControl.PUBLIC_READ,
             publicReadAccess: true,
             websiteIndexDocument: 'index.html',
@@ -149,10 +155,54 @@ export class Snort extends cdk.Stack {
         //     websiteErrorDocument: 'index.html'
         // });
         new CfnOutput(this, 'frontend-url', {
-            value: bucket.bucketWebsiteUrl,
+            value: this.bucket.bucketWebsiteUrl,
         });
         new CfnOutput(this, 'frontend-bucket', {
-            value: bucket.bucketName,
+            value: this.bucket.bucketName,
         });
+    }
+
+    private createCloudfront() {
+        this.cloudFrontDistribution = new CloudFrontWebDistribution(this, 'cloudfront', {
+            viewerCertificate: ViewerCertificate.fromAcmCertificate(this.props.route53certificate, {
+                aliases: ["snort.cc"],
+            }),
+            defaultRootObject: 'index.html',
+            errorConfigurations: [
+                {
+                    errorCachingMinTtl: 10,
+                    errorCode: 404,
+                    responsePagePath: '/index.html',
+                    responseCode: 200,
+                }
+            ],
+            originConfigs: [
+                {
+                    s3OriginSource: {
+                        s3BucketSource: this.bucket,
+
+                    },
+                    behaviors: [
+                        {
+                            isDefaultBehavior: true,
+                            allowedMethods: CloudFrontAllowedMethods.ALL,
+                            compress: true,
+                            defaultTtl: Duration.seconds(10),
+                        },
+                    ]
+                }
+            ]
+        });
+    }
+
+    private attachRoute53ToCloudfront() {
+        const domain = HostedZone.fromLookup(this, 'domain', {
+            domainName: 'snort.cc',
+        });
+        new ARecord(this, 'domain-to-cf', {
+            zone: domain,
+            target: RecordTarget.fromAlias(new CloudFrontTarget(this.cloudFrontDistribution)),
+        })
+
     }
 }
