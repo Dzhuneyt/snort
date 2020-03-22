@@ -3,9 +3,7 @@ import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
 import {Snort} from "../lib/Snort";
 import {Ci} from "../lib/Ci";
-import {Route53} from "../lib/Route53";
 import {Environment} from "@aws-cdk/core";
-import {Route53Certificate} from "../lib/Route53Certificate";
 import {SnortFrontend} from "../lib/SnortFrontend";
 
 const app = new cdk.App();
@@ -26,16 +24,6 @@ try {
         env,
     });
 
-    const route53 = new Route53(app, `snort-route53-base-${environmentName}`, {
-        description: 'Snort - the domain part',
-        env
-    });
-    const route53certificate = new Route53Certificate(app, `snort-route53-cert-${environmentName}`, {
-        description: 'Snort - the domain certificate and validation mechanism',
-        env,
-    });
-    route53certificate.addDependency(route53);
-
     const theAppStack = new Snort(app, `snort-app-${environmentName}`, {
         description: 'Snort - the app itself',
         env,
@@ -45,9 +33,6 @@ try {
         env,
         bucket: theAppStack.bucket,
     });
-
-    theAppStack.addDependency(route53);
-    theAppStack.addDependency(route53certificate);
 } catch (e) {
     console.log(e);
     process.exit(1);
