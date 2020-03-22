@@ -26,7 +26,7 @@ export class Ci extends Stack {
             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas',
 
             'echo Building frontend',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL="https://backend.${STAGE}.snort.cc" npm run ci:replace-env-vars',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL="https://backend.${STAGE}.snort.cc/" npm run ci:replace-env-vars',
             'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
 
             // CI Self provision on master branch commits
