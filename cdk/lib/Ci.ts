@@ -25,14 +25,13 @@ export class Ci extends Stack {
             'echo Building Lambdas',
             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas',
 
+            'echo Building frontend',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL="https://backend.${STAGE}.snort.cc" npm run ci:replace-env-vars',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
+
             // CI Self provision on master branch commits
             environmentName === 'production' ? 'echo Deploying CI infrastructure' : null,
             environmentName === 'production' ? 'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci' : null,
-
-            'echo Building frontend',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL="https://backend.${STAGE}.snort.cc" npm run ci:replace-env-vars',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
 
             'echo Deploying APP infrastructure',
             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
@@ -55,6 +54,7 @@ export class Ci extends Stack {
                         commands: [
                             'cd ${CODEBUILD_SRC_DIR} && npm ci --no-audit',
                             'cd ${CODEBUILD_SRC_DIR}/cdk && npm ci --no-audit',
+                            'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
                         ],
                     },
                     build: {
