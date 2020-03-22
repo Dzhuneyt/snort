@@ -1,15 +1,31 @@
-import {Construct, Stack, StackProps} from "@aws-cdk/core";
-import {HostedZone, IHostedZone, PublicHostedZone} from "@aws-cdk/aws-route53";
-import {Certificate, DnsValidatedCertificate, ICertificate} from "@aws-cdk/aws-certificatemanager";
+import {CfnOutput, Construct, Stack, StackProps} from "@aws-cdk/core";
+import {IHostedZone, PublicHostedZone, ZoneDelegationRecord} from "@aws-cdk/aws-route53";
+import {ICertificate} from "@aws-cdk/aws-certificatemanager";
 
 export class Route53 extends Stack {
-    readonly route53: IHostedZone;
-    readonly route53certificate: ICertificate;
+    private readonly route53: IHostedZone;
+
+    private envName = process.env.STAGE;
 
     constructor(scope: Construct, id: string, props: StackProps) {
         super(scope, id, props);
 
-        this.route53 = PublicHostedZone.fromPublicHostedZoneId(this, 'domain', 'Z3F60K0OWWJH8I');
-        this.route53certificate = Certificate.fromCertificateArn(this, 'cert', 'arn:aws:acm:us-east-1:347315207830:certificate/05a8c11a-82d1-4cc1-8ef5-f1b31eea3362');
+        // const mainDomain = PublicHostedZone.fromLookup(this, 'tld', {
+        //     domainName: "snort.cc",
+        // });
+        //
+        // this.route53 = new PublicHostedZone(this, 'route53', {
+        //     zoneName: this.envName + '.snort.cc',
+        // });
+        //
+        // const zoneDelegation = new ZoneDelegationRecord(this, 'route53_subdomain', {
+        //     zone: mainDomain,
+        //     recordName: this.route53.zoneName,
+        //     nameServers: this.route53.hostedZoneNameServers! // <-- the "!" means "I know this won't be undefined"
+        // });
+
+        new CfnOutput(this, 'domain-name', {
+            value: "ignored"
+        });
     }
 }

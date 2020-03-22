@@ -9,11 +9,19 @@ import {BillingMode, Table} from '@aws-cdk/aws-dynamodb';
 import {RetentionDays} from "@aws-cdk/aws-logs";
 import {CorsOptions} from "@aws-cdk/aws-apigateway/lib/cors";
 import {BucketAccessControl} from "@aws-cdk/aws-s3";
-import {ARecord, HostedZone, IHostedZone, RecordTarget} from "@aws-cdk/aws-route53";
-import {ICertificate} from "@aws-cdk/aws-certificatemanager";
+import {
+    ARecord,
+    HostedZone,
+    IHostedZone,
+    PublicHostedZone,
+    RecordTarget,
+    ZoneDelegationRecord
+} from "@aws-cdk/aws-route53";
+import {DnsValidatedCertificate, ICertificate} from "@aws-cdk/aws-certificatemanager";
 import {AutoDeleteBucket} from '@mobileposse/auto-delete-bucket';
 import {CloudFrontAllowedMethods, CloudFrontWebDistribution, ViewerCertificate} from "@aws-cdk/aws-cloudfront";
-import {CloudFrontTarget} from "@aws-cdk/aws-route53-targets";
+import {ApiGateway, CloudFrontTarget} from "@aws-cdk/aws-route53-targets";
+import {main} from "ts-node/dist/bin";
 
 
 interface Lambdas {
@@ -22,8 +30,6 @@ interface Lambdas {
 }
 
 export interface Props extends StackProps {
-    route53: IHostedZone,
-    route53certificate: ICertificate,
 }
 
 export class Snort extends cdk.Stack {
@@ -31,18 +37,41 @@ export class Snort extends cdk.Stack {
     private lambdas: Lambdas;
     private api: RestApi;
     private props: Props;
-    private bucket: AutoDeleteBucket;
+    public bucket: AutoDeleteBucket;
     private cloudFrontDistribution: CloudFrontWebDistribution;
+
+    private envName = process.env.STAGE;
+    private certificateFrontend: DnsValidatedCertificate;
+    private certificateBackend: DnsValidatedCertificate;
+    private mainDomain: IHostedZone;
 
     constructor(scope: cdk.Construct, id: string, props: Props) {
         super(scope, id, props);
         this.props = props;
+
+        const mainDomain = PublicHostedZone.fromLookup(this, 'tld', {
+            domainName: "snort.cc",
+        });
+
+        const subdomain = new PublicHostedZone(this, 'route53', {
+            zoneName: this.envName + '.snort.cc',
+        });
+
+        const zoneDelegation = new ZoneDelegationRecord(this, 'route53_subdomain', {
+            zone: mainDomain,
+            recordName: subdomain.zoneName,
+            nameServers: subdomain.hostedZoneNameServers! // <-- the "!" means "I know this won't be undefined"
+        });
+        this.mainDomain = subdomain;
+        if (!mainDomain) {
+            throw new Error('Can not find route53 hosted zone for domain ' + this.envName + '.snort.cc');
+        }
+        this.createCertificates();
         this.createDynamoTable();
         this.createLambdas();
         this.createApiGateway();
-        this.createFrontendBucket();
-        this.createCloudfront();
-        this.attachRoute53ToCloudfront();
+        this.createFrontendInfrastructure();
+        this.createRoute53Records();
     }
 
     private createLambdas() {
@@ -83,22 +112,13 @@ export class Snort extends cdk.Stack {
             disableCache: true,
         };
 
-        // const certificate = new DnsValidatedCertificate(this, 'certificate', {
-        //     domainName: 'snort.cc',
-        //     hostedZone: this.props.route53,
-        //     subjectAlternativeNames: [
-        //         "production.snort.cc",
-        //         "staging.snort.cc",
-        //     ],
-        // });
-
         this.api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
             domainName: {
-                domainName: process.env.STAGE + '.snort.cc',
-                certificate: this.props.route53certificate,
+                domainName: 'backend.' + process.env.STAGE + '.snort.cc',
+                certificate: this.certificateBackend,
                 endpointType: EndpointType.EDGE,
             },
-            endpointExportName: `${process.env.STAGE}-backend-url`,
+            endpointExportName: `backend-url-${process.env.STAGE}`,
             retainDeployments: false,
             defaultMethodOptions: {
                 authorizationType: AuthorizationType.NONE,
@@ -125,12 +145,7 @@ export class Snort extends cdk.Stack {
             defaultCorsPreflightOptions: defaultCors,
         }).addMethod('GET', new LambdaIntegration(this.lambdas.urlGetLambda));
 
-        // new ARecord(this, process.env.STAGE + '-domain-a-record', {
-        //     zone: this.props.route53,
-        //     recordName: process.env.STAGE,
-        //     ttl: Duration.seconds(10),
-        //     target: RecordTarget.fromAlias(new ApiGateway(this.api))
-        // });
+
     }
 
     private createDynamoTable() {
@@ -141,7 +156,7 @@ export class Snort extends cdk.Stack {
         });
     }
 
-    private createFrontendBucket() {
+    private createFrontendInfrastructure() {
         this.bucket = new AutoDeleteBucket(this, 'frontend', {
             accessControl: BucketAccessControl.PUBLIC_READ,
             publicReadAccess: true,
@@ -154,18 +169,16 @@ export class Snort extends cdk.Stack {
         //     websiteIndexDocument: 'index.html',
         //     websiteErrorDocument: 'index.html'
         // });
-        new CfnOutput(this, 'frontend-url', {
-            value: this.bucket.bucketWebsiteUrl,
-        });
-        new CfnOutput(this, 'frontend-bucket', {
-            value: this.bucket.bucketName,
-        });
-    }
+        // new CfnOutput(this, 'frontend-url', {
+        //     value: this.bucket.bucketWebsiteUrl,
+        // });
+        // new CfnOutput(this, 'frontend-bucket', {
+        //     value: this.bucket.bucketName,
+        // });
 
-    private createCloudfront() {
         this.cloudFrontDistribution = new CloudFrontWebDistribution(this, 'cloudfront', {
-            viewerCertificate: ViewerCertificate.fromAcmCertificate(this.props.route53certificate, {
-                aliases: ["snort.cc"],
+            viewerCertificate: ViewerCertificate.fromAcmCertificate(this.certificateFrontend, {
+                aliases: [this.envName + ".snort.cc"],
             }),
             defaultRootObject: 'index.html',
             errorConfigurations: [
@@ -195,14 +208,42 @@ export class Snort extends cdk.Stack {
         });
     }
 
-    private attachRoute53ToCloudfront() {
-        const domain = HostedZone.fromLookup(this, 'domain', {
-            domainName: 'snort.cc',
-        });
-        new ARecord(this, 'domain-to-cf', {
-            zone: domain,
-            target: RecordTarget.fromAlias(new CloudFrontTarget(this.cloudFrontDistribution)),
-        })
+    private createCertificates() {
+        // Create certificate for the frontend
+        this.certificateFrontend = new DnsValidatedCertificate(this, 'cert-frontend', {
+            domainName: this.mainDomain.zoneName,
+            hostedZone: this.mainDomain,
 
+            // CloudFront requires all certificates be in us-east-1
+            region: 'us-east-1',
+        });
+
+        // Create certificate for the backend
+        this.certificateBackend = new DnsValidatedCertificate(this, 'cert-backend', {
+            domainName: "backend." + this.mainDomain.zoneName,
+            hostedZone: this.mainDomain,
+
+            // CloudFront requires all certificates be in us-east-1
+            region: 'us-east-1',
+        });
+
+
+    }
+
+    private createRoute53Records() {
+        // Forward request to this domain, to the CF distribution
+        new ARecord(this, 'route53-a-record-frontend', {
+            zone: this.mainDomain,
+            ttl: Duration.seconds(10),
+            target: RecordTarget.fromAlias(new CloudFrontTarget(this.cloudFrontDistribution)),
+        });
+
+        // Forward requests from the backend subdomain to AppSync
+        new ARecord(this, 'route53-a-record-backend', {
+            zone: this.mainDomain,
+            recordName: "backend." + this.mainDomain.zoneName,
+            ttl: Duration.seconds(10),
+            target: RecordTarget.fromAlias(new ApiGateway(this.api))
+        });
     }
 }
