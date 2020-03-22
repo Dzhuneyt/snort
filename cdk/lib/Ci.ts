@@ -26,23 +26,21 @@ export class Ci extends Stack {
             environmentName === 'production' ? 'echo Deploying CI infrastructure' : null,
             environmentName === 'production' ? 'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci' : null,
 
+            'echo Building frontend',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL="https://backend.${STAGE}.snort.cc" npm run ci:replace-env-vars',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
+
             'echo Deploying APP infrastructure',
             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
 
-            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=backendurl --fromStack=snort-app-${STAGE})',
             'export BUCKET_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendurl --fromStack=snort-app-${STAGE})',
-            'echo Backend URL is ${BACKEND_URL}',
             'echo Frontend URL is ${BUCKET_URL}',
 
-            'echo Building frontend',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL=${BACKEND_URL} npm run ci:replace-env-vars',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
-
-            'echo Uploading frontend to S3',
-            'export BUCKET_NAME=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendbucket --fromStack=snort-app-${STAGE})',
-            'echo Target S3 bucket is ${BUCKET_NAME}',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && aws s3 cp ./dist/frontend s3://${BUCKET_NAME} --recursive',
+            // 'echo Uploading frontend to S3',
+            // 'export BUCKET_NAME=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendbucket --fromStack=snort-app-${STAGE})',
+            // 'echo Target S3 bucket is ${BUCKET_NAME}',
+            // 'cd ${CODEBUILD_SRC_DIR}/frontend && aws s3 cp ./dist/frontend s3://${BUCKET_NAME} --recursive',
         ].filter(value => value !== null);
 
 
