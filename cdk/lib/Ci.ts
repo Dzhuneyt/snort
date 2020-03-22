@@ -31,6 +31,9 @@ export class Ci extends Stack {
             'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL="https://backend.${STAGE}.snort.cc" npm run ci:replace-env-vars',
             'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
 
+            'echo Building Lambdas',
+            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas',
+
             'echo Deploying APP infrastructure',
             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
 
