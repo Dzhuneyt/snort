@@ -43,29 +43,15 @@ export class Snort extends cdk.Stack {
     private envName = process.env.STAGE;
     private certificateFrontend: DnsValidatedCertificate;
     private certificateBackend: DnsValidatedCertificate;
-    private mainDomain: IHostedZone;
+
+    private hostedZone: IHostedZone;
+    private domainName: string;
 
     constructor(scope: cdk.Construct, id: string, props: Props) {
         super(scope, id, props);
         this.props = props;
 
-        const mainDomain = PublicHostedZone.fromLookup(this, 'tld', {
-            domainName: "snort.cc",
-        });
-
-        const subdomain = new PublicHostedZone(this, 'route53', {
-            zoneName: this.envName + '.snort.cc',
-        });
-
-        const zoneDelegation = new ZoneDelegationRecord(this, 'route53_subdomain', {
-            zone: mainDomain,
-            recordName: subdomain.zoneName,
-            nameServers: subdomain.hostedZoneNameServers! // <-- the "!" means "I know this won't be undefined"
-        });
-        this.mainDomain = subdomain;
-        if (!mainDomain) {
-            throw new Error('Can not find route53 hosted zone for domain ' + this.envName + '.snort.cc');
-        }
+        this.createHostedZonesInRoute53();
         this.createCertificates();
         this.createDynamoTable();
         this.createLambdas();
@@ -114,7 +100,7 @@ export class Snort extends cdk.Stack {
 
         this.api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
             domainName: {
-                domainName: 'backend.' + process.env.STAGE + '.snort.cc',
+                domainName: 'backend.' + this.domainName,
                 certificate: this.certificateBackend,
                 endpointType: EndpointType.EDGE,
             },
@@ -163,22 +149,10 @@ export class Snort extends cdk.Stack {
             websiteIndexDocument: 'index.html',
             websiteErrorDocument: 'index.html'
         });
-        // const bucket = new Bucket(this, 'frontend', {
-        //     accessControl: BucketAccessControl.PUBLIC_READ,
-        //     publicReadAccess: true,
-        //     websiteIndexDocument: 'index.html',
-        //     websiteErrorDocument: 'index.html'
-        // });
-        // new CfnOutput(this, 'frontend-url', {
-        //     value: this.bucket.bucketWebsiteUrl,
-        // });
-        // new CfnOutput(this, 'frontend-bucket', {
-        //     value: this.bucket.bucketName,
-        // });
 
         this.cloudFrontDistribution = new CloudFrontWebDistribution(this, 'cloudfront', {
             viewerCertificate: ViewerCertificate.fromAcmCertificate(this.certificateFrontend, {
-                aliases: [this.envName + ".snort.cc"],
+                aliases: [this.domainName],
             }),
             defaultRootObject: 'index.html',
             errorConfigurations: [
@@ -211,8 +185,8 @@ export class Snort extends cdk.Stack {
     private createCertificates() {
         // Create certificate for the frontend
         this.certificateFrontend = new DnsValidatedCertificate(this, 'cert-frontend', {
-            domainName: this.mainDomain.zoneName,
-            hostedZone: this.mainDomain,
+            domainName: this.domainName,
+            hostedZone: this.hostedZone,
 
             // CloudFront requires all certificates be in us-east-1
             region: 'us-east-1',
@@ -220,8 +194,8 @@ export class Snort extends cdk.Stack {
 
         // Create certificate for the backend
         this.certificateBackend = new DnsValidatedCertificate(this, 'cert-backend', {
-            domainName: "backend." + this.mainDomain.zoneName,
-            hostedZone: this.mainDomain,
+            domainName: "backend." + this.domainName,
+            hostedZone: this.hostedZone,
 
             // CloudFront requires all certificates be in us-east-1
             region: 'us-east-1',
@@ -233,17 +207,43 @@ export class Snort extends cdk.Stack {
     private createRoute53Records() {
         // Forward request to this domain, to the CF distribution
         new ARecord(this, 'route53-a-record-frontend', {
-            zone: this.mainDomain,
+            zone: this.hostedZone,
             ttl: Duration.seconds(10),
             target: RecordTarget.fromAlias(new CloudFrontTarget(this.cloudFrontDistribution)),
         });
 
         // Forward requests from the backend subdomain to AppSync
         new ARecord(this, 'route53-a-record-backend', {
-            zone: this.mainDomain,
-            recordName: "backend." + this.mainDomain.zoneName,
+            zone: this.hostedZone,
+            recordName: "backend." + this.domainName,
             ttl: Duration.seconds(10),
             target: RecordTarget.fromAlias(new ApiGateway(this.api))
         });
+    }
+
+    private createHostedZonesInRoute53() {
+        const mainDomain = PublicHostedZone.fromLookup(this, 'tld', {
+            domainName: "snort.cc",
+        });
+
+        if (this.envName === 'production') {
+            // Use the main domain
+            this.domainName = "snort.cc";
+            this.hostedZone = mainDomain;
+        } else {
+            this.domainName = this.envName + '.snort.cc';
+
+            // Create a hosted zone for this subdomain
+            this.hostedZone = new PublicHostedZone(this, 'route53', {
+                zoneName: this.domainName,
+            });
+
+            // Attach this subdomain to the main Route53
+            new ZoneDelegationRecord(this, 'route53_subdomain', {
+                zone: mainDomain,
+                recordName: this.domainName,
+                nameServers: this.hostedZone.hostedZoneNameServers! // <-- the "!" means "I know this won't be undefined"
+            });
+        }
     }
 }
