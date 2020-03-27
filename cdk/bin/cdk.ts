@@ -4,7 +4,6 @@ import * as cdk from '@aws-cdk/core';
 import {Snort} from "../lib/Snort";
 import {Ci} from "../lib/Ci";
 import {Environment} from "@aws-cdk/core";
-import {SnortFrontend} from "../lib/SnortFrontend";
 
 const app = new cdk.App();
 const environmentName = process.env.STAGE;
@@ -27,11 +26,6 @@ try {
     const theAppStack = new Snort(app, `snort-app-${environmentName}`, {
         description: 'Snort - the app itself',
         env,
-    });
-    const frontend = new SnortFrontend(app, `snort-app-frontend-${environmentName}`, {
-        description: 'Snort - the app itself',
-        env,
-        bucket: theAppStack.bucket,
     });
 } catch (e) {
     console.log(e);

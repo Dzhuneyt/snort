@@ -16,7 +16,8 @@
     "build:lambdas:watch": "npx webpack -c webpack.config.js --watch",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "get:backend-url": "./scripts/get-backend-url.sh"
   },
   "devDependencies": {
     "@aws-cdk/assert": "^1.30.0",

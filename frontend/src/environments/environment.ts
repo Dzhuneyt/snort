@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   // @ts-ignore
-  backend: 'https://052nyi4pbk.execute-api.us-east-1.amazonaws.com/prod/',
+  backend: 'https://v8fcett37k.execute-api.us-east-1.amazonaws.com/prod/',
 };
 
 /*

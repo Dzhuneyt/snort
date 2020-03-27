@@ -149,6 +149,10 @@ export class Snort extends cdk.Stack {
             websiteIndexDocument: 'index.html',
             websiteErrorDocument: 'index.html'
         });
+        new CfnOutput(this, 'frontend-bucket', {
+            value: this.bucket.bucketName,
+            exportName: 'frontend-bucket-' + this.envName
+        });
 
         this.cloudFrontDistribution = new CloudFrontWebDistribution(this, 'cloudfront', {
             viewerCertificate: ViewerCertificate.fromAcmCertificate(this.certificateFrontend, {

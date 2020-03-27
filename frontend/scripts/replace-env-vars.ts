@@ -1,3 +1,5 @@
+import ErrnoException = NodeJS.ErrnoException;
+
 const fs = require('fs');
 
 /**
@@ -18,17 +20,18 @@ if (!backendUrl) {
 fs.readFile(
   envFile,
   'utf8',
-  function (err, data) {
+  (err, data) => {
     if (err) {
       console.log(err);
       process.exit(1);
-      return;
     }
     data = data.replace(/\${BACKEND_URL}/g, backendUrl);
 
     console.log('New environment file contents:', data);
 
-    fs.writeFile(envFile, data, 'utf8', function (err) {
-      if (err) return console.log(err);
+    fs.writeFile(envFile, data, 'utf8', (err2: ErrnoException | null) => {
+      if (err2) {
+        return console.log(err2);
+      }
     });
   });
