@@ -39,7 +39,7 @@ export class Ci extends Stack {
             'echo Building frontend',
             'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL=${BACKEND_URL} npm run ci:replace-env-vars',
             'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run copy-to-s3',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run copy-to-s3 ${STAGE}',
         ].filter(value => value !== null);
 
 
