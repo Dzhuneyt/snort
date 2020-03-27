@@ -25,9 +25,6 @@ export class Ci extends Stack {
             'echo Building Lambdas',
             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas',
 
-            'echo Building frontend',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL="https://backend.${STAGE}.snort.cc/" npm run ci:replace-env-vars',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
 
             // CI Self provision on master branch commits
             environmentName === 'production' ? 'echo Deploying CI infrastructure' : null,
@@ -36,13 +33,13 @@ export class Ci extends Stack {
             'echo Deploying APP infrastructure',
             'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
 
-            'export BUCKET_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendurl --fromStack=snort-app-${STAGE})',
-            'echo Frontend URL is ${BUCKET_URL}',
+            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=backendurl --fromStack=snort-app-${STAGE})',
+            'echo Backend URL is ${BACKEND_URL}',
 
-            // 'echo Uploading frontend to S3',
-            // 'export BUCKET_NAME=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=frontendbucket --fromStack=snort-app-${STAGE})',
-            // 'echo Target S3 bucket is ${BUCKET_NAME}',
-            // 'cd ${CODEBUILD_SRC_DIR}/frontend && aws s3 cp ./dist/frontend s3://${BUCKET_NAME} --recursive',
+            'echo Building frontend',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL=${BACKEND_URL} npm run ci:replace-env-vars',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
+            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run copy-to-s3',
         ].filter(value => value !== null);
 
 
