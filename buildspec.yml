@@ -12,6 +12,12 @@ phases:
       - echo Building Lambdas
       - cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas
 
+      - |
+        if [ "$STAGE" == "production" ]; then
+          echo Source is production
+        else
+          echo Source is not productionss
+        fi
       - echo Deploying CI infrastructure
       - cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci
       - echo Deploying APP infrastructure
