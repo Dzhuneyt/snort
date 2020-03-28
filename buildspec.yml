@@ -10,15 +10,13 @@ phases:
     commands:
       - echo Building Lambdas
       - cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas
-
       - |
         if [ "$STAGE" == "production" ]; then
-          echo Source is production
+          echo Deploying CI infrastructure
+          cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci
         else
-          echo Source is not productionss
+          echo Source is not production
         fi
-      - echo Deploying CI infrastructure
-      - cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci
       - echo Deploying APP infrastructure
       - cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app
       - export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=backendurl --fromStack=snort-app-${STAGE})
