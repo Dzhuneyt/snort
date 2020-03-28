@@ -8,7 +8,6 @@ phases:
       - cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit
   build:
     commands:
-      - if [[ "$STAGE" == "production" ]]; then echo 123; fi
       - echo Building Lambdas
       - cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas
 
