@@ -44,28 +44,7 @@ export class Ci extends Stack {
 
 
         const cdkBuild = new PipelineProject(this, `${environmentName}-cdk-build`, {
-            buildSpec: BuildSpec.fromObject({
-                version: '0.2',
-                phases: {
-                    install: {
-                        commands: [
-                            'cd ${CODEBUILD_SRC_DIR} && npm ci --no-audit',
-                            'cd ${CODEBUILD_SRC_DIR}/cdk && npm ci --no-audit',
-                            'cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit',
-                        ],
-                    },
-                    build: {
-                        commands: buildCommands,
-                    },
-                },
-                cache: {
-                    paths: [
-                        'cdk/node_modules/**/*',
-                        'frontend/node_modules/**/*',
-                        '/root/.npm/**/*'
-                    ],
-                }
-            }),
+            buildSpec: BuildSpec.fromSourceFilename('buildspec.yml'),
             environmentVariables: {
                 STAGE: {
                     value: environmentName,

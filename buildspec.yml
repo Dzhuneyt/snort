@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - cd ${CODEBUILD_SRC_DIR} && npm ci --no-audit
+      - cd ${CODEBUILD_SRC_DIR}/cdk && npm ci --no-audit
+      - cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit
+  build:
+    commands:
+      - echo Building Lambdas
+      - cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas
+
+cache:
+  paths:
+    - 'cdk/node_modules/**/*'
+    - 'frontend/node_modules/**/*'
+    - '/root/.npm/**/*'
