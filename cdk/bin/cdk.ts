@@ -14,7 +14,7 @@ if (!environmentName) {
 
 const env: Environment = {
     region: 'us-east-1',
-    account: '347315207830',
+    account: '216987438199',
 };
 
 try {

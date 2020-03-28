@@ -228,6 +228,7 @@ export class Snort extends cdk.Stack {
     private createHostedZonesInRoute53() {
         const mainDomain = PublicHostedZone.fromLookup(this, 'tld', {
             domainName: "snort.cc",
+            privateZone: false,
         });
 
         if (this.envName === 'production') {
