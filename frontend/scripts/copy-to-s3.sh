@@ -8,7 +8,7 @@ if [ -z "$STAGE" ]; then
 fi
 
 BUCKET=$(aws cloudformation describe-stacks \
-  --stack-name snort-app-production \
+  --stack-name snort-app-"${STAGE}" \
   --query "Stacks[0].Outputs[?ExportName=='frontend-bucket-${STAGE}'].OutputValue" \
   --output text)
 
