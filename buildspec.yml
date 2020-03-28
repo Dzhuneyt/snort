@@ -11,6 +11,17 @@ phases:
       - echo Building Lambdas
       - cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas
 
+      - echo Deploying CI infrastructure
+      - cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci
+      - echo Deploying APP infrastructure
+      - cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app
+      - export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=backendurl --fromStack=snort-app-${STAGE})
+      - echo Backend URL is ${BACKEND_URL}
+      - echo Building frontend
+      - cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL=${BACKEND_URL} npm run ci:replace-env-vars
+      - cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod
+      - cd ${CODEBUILD_SRC_DIR}/frontend && npm run copy-to-s3 ${STAGE}
+
 cache:
   paths:
     - 'cdk/node_modules/**/*'

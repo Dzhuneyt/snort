@@ -42,7 +42,6 @@ export class Ci extends Stack {
             'cd ${CODEBUILD_SRC_DIR}/frontend && npm run copy-to-s3 ${STAGE}',
         ].filter(value => value !== null);
 
-
         const cdkBuild = new PipelineProject(this, `${environmentName}-cdk-build`, {
             buildSpec: BuildSpec.fromSourceFilename('buildspec.yml'),
             environmentVariables: {
