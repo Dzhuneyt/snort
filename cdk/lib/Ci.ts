@@ -82,6 +82,7 @@ export class Ci extends Stack {
         const actionsProduction = this.createCodeBuildActions("production");
 
         const staging = new codepipeline.Pipeline(this, 'staging', {
+            pipelineName: 'snort-ci-develop',
             restartExecutionOnUpdate: true,
             artifactBucket: artifactsbucket,
             stages: [
@@ -114,6 +115,7 @@ export class Ci extends Stack {
         });
 
         const production = new codepipeline.Pipeline(this, 'production', {
+            pipelineName: 'snort-ci-master',
             restartExecutionOnUpdate: true,
             artifactBucket: artifactsbucket,
             stages: [
