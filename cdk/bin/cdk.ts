@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
-import {Snort} from "../lib/Snort";
+import {App} from "../lib/App";
 import {Ci} from "../lib/Ci";
 import {Environment} from "@aws-cdk/core";
 
@@ -23,7 +23,7 @@ try {
         env,
     });
 
-    const theAppStack = new Snort(app, `snort-app-${environmentName}`, {
+    const theAppStack = new App(app, `snort-app-${environmentName}`, {
         description: 'Snort - the app itself',
         env,
     });

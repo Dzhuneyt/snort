@@ -32,7 +32,7 @@ interface Lambdas {
 export interface Props extends StackProps {
 }
 
-export class Snort extends cdk.Stack {
+export class App extends cdk.Stack {
     private table: Table;
     private lambdas: Lambdas;
     private api: RestApi;
