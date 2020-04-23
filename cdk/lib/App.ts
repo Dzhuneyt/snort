@@ -17,7 +17,7 @@ import {
     RecordTarget,
     ZoneDelegationRecord
 } from "@aws-cdk/aws-route53";
-import {DnsValidatedCertificate, ICertificate} from "@aws-cdk/aws-certificatemanager";
+import {Certificate, DnsValidatedCertificate, ICertificate} from "@aws-cdk/aws-certificatemanager";
 import {AutoDeleteBucket} from '@mobileposse/auto-delete-bucket';
 import {CloudFrontAllowedMethods, CloudFrontWebDistribution, ViewerCertificate} from "@aws-cdk/aws-cloudfront";
 import {ApiGateway, CloudFrontTarget} from "@aws-cdk/aws-route53-targets";
@@ -41,23 +41,15 @@ export class App extends cdk.Stack {
     private cloudFrontDistribution: CloudFrontWebDistribution;
 
     private envName = process.env.STAGE;
-    private certificateFrontend: DnsValidatedCertificate;
-    private certificateBackend: DnsValidatedCertificate;
-
-    private hostedZone: IHostedZone;
-    private domainName: string;
 
     constructor(scope: cdk.Construct, id: string, props: Props) {
         super(scope, id, props);
         this.props = props;
 
-        this.createHostedZonesInRoute53();
-        this.createCertificates();
         this.createDynamoTable();
         this.createLambdas();
         this.createApiGateway();
         this.createFrontendInfrastructure();
-        this.createRoute53Records();
     }
 
     private createLambdas() {
@@ -99,11 +91,6 @@ export class App extends cdk.Stack {
         };
 
         this.api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
-            domainName: {
-                domainName: 'backend.' + this.domainName,
-                certificate: this.certificateBackend,
-                endpointType: EndpointType.EDGE,
-            },
             endpointExportName: `backend-url-${process.env.STAGE}`,
             retainDeployments: false,
             defaultMethodOptions: {
@@ -130,8 +117,6 @@ export class App extends cdk.Stack {
         apiUrlsResource.addResource('{id}', {
             defaultCorsPreflightOptions: defaultCors,
         }).addMethod('GET', new LambdaIntegration(this.lambdas.urlGetLambda));
-
-
     }
 
     private createDynamoTable() {
@@ -154,10 +139,14 @@ export class App extends cdk.Stack {
             exportName: 'frontend-bucket-' + this.envName
         });
 
+        const certificate = this.envName === 'production'
+            ? Certificate.fromCertificateArn(this, 'certificate', 'arn:aws:acm:us-east-1:216987438199:certificate/3913de84-07ea-4d66-a4c0-0918d03e1cc3')
+            : undefined;
+
         this.cloudFrontDistribution = new CloudFrontWebDistribution(this, 'cloudfront', {
-            viewerCertificate: ViewerCertificate.fromAcmCertificate(this.certificateFrontend, {
-                aliases: [this.domainName],
-            }),
+            viewerCertificate: certificate ? ViewerCertificate.fromAcmCertificate(certificate, {
+                aliases: ["snort.cc"],
+            }) : undefined,
             defaultRootObject: 'index.html',
             errorConfigurations: [
                 {
@@ -184,71 +173,5 @@ export class App extends cdk.Stack {
                 }
             ]
         });
-    }
-
-    private createCertificates() {
-        // Create certificate for the frontend
-        this.certificateFrontend = new DnsValidatedCertificate(this, 'cert-frontend', {
-            domainName: this.domainName,
-            hostedZone: this.hostedZone,
-
-            // CloudFront requires all certificates be in us-east-1
-            region: 'us-east-1',
-        });
-
-        // Create certificate for the backend
-        this.certificateBackend = new DnsValidatedCertificate(this, 'cert-backend', {
-            domainName: "backend." + this.domainName,
-            hostedZone: this.hostedZone,
-
-            // CloudFront requires all certificates be in us-east-1
-            region: 'us-east-1',
-        });
-
-
-    }
-
-    private createRoute53Records() {
-        // Forward request to this domain, to the CF distribution
-        new ARecord(this, 'route53-a-record-frontend', {
-            zone: this.hostedZone,
-            ttl: Duration.seconds(10),
-            target: RecordTarget.fromAlias(new CloudFrontTarget(this.cloudFrontDistribution)),
-        });
-
-        // Forward requests from the backend subdomain to AppSync
-        new ARecord(this, 'route53-a-record-backend', {
-            zone: this.hostedZone,
-            recordName: "backend." + this.domainName,
-            ttl: Duration.seconds(10),
-            target: RecordTarget.fromAlias(new ApiGateway(this.api))
-        });
-    }
-
-    private createHostedZonesInRoute53() {
-        const mainDomain = PublicHostedZone.fromLookup(this, 'tld', {
-            domainName: "snort.cc",
-            privateZone: false,
-        });
-
-        if (this.envName === 'production') {
-            // Use the main domain
-            this.domainName = "snort.cc";
-            this.hostedZone = mainDomain;
-        } else {
-            this.domainName = this.envName + '.snort.cc';
-
-            // Create a hosted zone for this subdomain
-            this.hostedZone = new PublicHostedZone(this, 'route53', {
-                zoneName: this.domainName,
-            });
-
-            // Attach this subdomain to the main Route53
-            new ZoneDelegationRecord(this, 'route53_subdomain', {
-                zone: mainDomain,
-                recordName: this.domainName,
-                nameServers: this.hostedZone.hostedZoneNameServers! // <-- the "!" means "I know this won't be undefined"
-            });
-        }
     }
 }
