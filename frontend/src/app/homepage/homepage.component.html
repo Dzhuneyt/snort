@@ -1,23 +1,22 @@
-<div class="wrapper" fxLayout="column">
+<div class="wrapper" fxLayout="column" fxLayoutAlign="center">
   <mat-form-field
     appearance="fill"
-    style="width: 720px;"
-    fxFlex
-    fxFlexAlign="center"
+    style="width: 720px; margin: auto;"
   >
     <mat-label>URL to be shortened</mat-label>
-    <input matInput placeholder="http://" (keydown)="onKeydown($event)" [(ngModel)]="url">
+    <label>
+      <input matInput placeholder="http://" (keydown)="onKeydown($event)" [(ngModel)]="url">
+    </label>
   </mat-form-field>
-
 
   <mat-form-field
     *ngIf="shortened"
     appearance="fill"
-    style="width: 300px; margin-top: 2em;"
-    fxFlex
-    fxFlexAlign="center"
+    style="width: 300px; margin-top: 2em; margin-left: auto; margin-right: auto;"
   >
     <mat-label>Shortened URL:</mat-label>
-    <input [value]="shortened" matInput placeholder="">
+    <label>
+      <input [value]="shortened" matInput placeholder="">
+    </label>
   </mat-form-field>
 </div>

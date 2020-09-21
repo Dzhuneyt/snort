@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "bootstrap": "npm i --no-audit && lerna bootstrap",
     "dev": "npm run docker:build:dev && uid=$(id -u):$(id -g) docker-compose up --force-recreate",
     "prod": "npm run terraform:01_base && npm run docker:build:prod && npm run docker:push-to-ecr && npm run terraform:02_database && npm run terraform:03_cluster && npm run terraform:04_service",
     "ecr:login": "$(aws ecr get-login --no-include-email)",
@@ -32,6 +33,9 @@
   },
   "homepage": "https://github.com/Dzhuneyt/snort#readme",
   "dependencies": {
-    "aws-cdk-output": "^1.0.15"
+    "aws-cdk-output": "^1.0.16"
+  },
+  "devDependencies": {
+    "lerna": "^3.22.1"
   }
 }
