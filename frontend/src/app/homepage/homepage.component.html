@@ -1,11 +1,11 @@
 <div class="wrapper" fxLayout="column" fxLayoutAlign="center">
   <mat-form-field
-    appearance="fill"
     style="width: 720px; margin: auto;"
+    appearance="fill"
   >
     <mat-label>URL to be shortened</mat-label>
     <label>
-      <input matInput placeholder="http://" (keydown)="onKeydown($event)" [(ngModel)]="url">
+      <input matInput type="text" placeholder="http://" (keydown)="onKeydown($event)" [(ngModel)]="url">
     </label>
   </mat-form-field>
 
@@ -16,7 +16,7 @@
   >
     <mat-label>Shortened URL:</mat-label>
     <label>
-      <input [value]="shortened" matInput placeholder="">
+      <input type="text" [value]="shortened" matInput placeholder="">
     </label>
   </mat-form-field>
 </div>
