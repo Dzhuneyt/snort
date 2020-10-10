@@ -1,40 +1,22 @@
 import * as cdk from '@aws-cdk/core';
-import {CfnOutput, Duration, RemovalPolicy, StackProps} from '@aws-cdk/core';
-import * as lambda from '@aws-cdk/aws-lambda';
-import {Code} from '@aws-cdk/aws-lambda';
+import {CfnOutput, Duration, StackProps} from '@aws-cdk/core';
 import * as apigateway from '@aws-cdk/aws-apigateway';
-import {AuthorizationType, EndpointType, LambdaIntegration, RestApi} from '@aws-cdk/aws-apigateway';
-import * as dynamodb from '@aws-cdk/aws-dynamodb';
-import {BillingMode, Table} from '@aws-cdk/aws-dynamodb';
-import {RetentionDays} from "@aws-cdk/aws-logs";
+import {AuthorizationType, LambdaIntegration, RestApi} from '@aws-cdk/aws-apigateway';
 import {CorsOptions} from "@aws-cdk/aws-apigateway/lib/cors";
 import {BucketAccessControl} from "@aws-cdk/aws-s3";
-import {
-    ARecord,
-    HostedZone,
-    IHostedZone,
-    PublicHostedZone,
-    RecordTarget,
-    ZoneDelegationRecord
-} from "@aws-cdk/aws-route53";
-import {Certificate, DnsValidatedCertificate, ICertificate} from "@aws-cdk/aws-certificatemanager";
+import {Certificate} from "@aws-cdk/aws-certificatemanager";
 import {AutoDeleteBucket} from '@mobileposse/auto-delete-bucket';
 import {CloudFrontAllowedMethods, CloudFrontWebDistribution, ViewerCertificate} from "@aws-cdk/aws-cloudfront";
-import {ApiGateway, CloudFrontTarget} from "@aws-cdk/aws-route53-targets";
-import {main} from "ts-node/dist/bin";
+import {Table} from "./constructs/Table";
+import {UrlGet} from "./constructs/UrlGet";
+import {UrlSave} from "./constructs/UrlSave";
 
-
-interface Lambdas {
-    urlSaveLambda: lambda.Function,
-    urlGetLambda: lambda.Function,
-}
 
 export interface Props extends StackProps {
 }
 
 export class App extends cdk.Stack {
-    private table: Table;
-    private lambdas: Lambdas;
+    private readonly table: Table;
     private api: RestApi;
     private props: Props;
     public bucket: AutoDeleteBucket;
@@ -46,43 +28,16 @@ export class App extends cdk.Stack {
         super(scope, id, props);
         this.props = props;
 
-        this.createDynamoTable();
-        this.createLambdas();
+        this.table = new Table(this, 'urls', {});
         this.createApiGateway();
         this.createFrontendInfrastructure();
     }
 
-    private createLambdas() {
-        const urlSaveLambda = new lambda.Function(this, 'url-post', {
-            code: Code.fromAsset(`${__dirname}/../dist/lambdas`),
-            handler: 'shorten-url.handler',
-            runtime: lambda.Runtime.NODEJS_12_X,
-            environment: {
-                TABLE_NAME: this.table.tableName,
-            },
-            logRetention: RetentionDays.SIX_MONTHS,
-        });
-        const urlGetLambda = new lambda.Function(this, 'url-get', {
-            code: Code.fromAsset(`${__dirname}/../dist/lambdas`),
-            handler: 'get-original-url.handler',
-            runtime: lambda.Runtime.NODEJS_12_X,
-            environment: {
-                TABLE_NAME: this.table.tableName,
-            },
-            logRetention: RetentionDays.SIX_MONTHS,
-        });
-
-        // Allow the Lambdas to read/write from DynamoDB
-        this.table.grantReadWriteData(urlSaveLambda);
-        this.table.grantReadWriteData(urlGetLambda);
-
-        this.lambdas = {
-            urlGetLambda,
-            urlSaveLambda,
-        }
-    }
-
     private createApiGateway() {
+
+        const urlSaveLambda = new UrlSave(this, 'url-save', {table: this.table}).lambda;
+        const urlGetLambda = new UrlGet(this, 'url-get', {table: this.table}).lambda;
+
         const defaultCors: CorsOptions = {
             allowHeaders: ['*'],
             allowOrigins: apigateway.Cors.ALL_ORIGINS,
@@ -90,7 +45,7 @@ export class App extends cdk.Stack {
             disableCache: true,
         };
 
-        this.api = new apigateway.RestApi(this, process.env.STAGE + '-api', {
+        this.api = new apigateway.RestApi(this, `${process.env.STAGE}-api`, {
             endpointExportName: `backend-url-${process.env.STAGE}`,
             retainDeployments: false,
             defaultMethodOptions: {
@@ -113,18 +68,12 @@ export class App extends cdk.Stack {
                 authorizationType: AuthorizationType.NONE,
             }
         });
-        apiUrlsResource.addMethod('POST', new LambdaIntegration(this.lambdas.urlSaveLambda));
-        apiUrlsResource.addResource('{id}', {
-            defaultCorsPreflightOptions: defaultCors,
-        }).addMethod('GET', new LambdaIntegration(this.lambdas.urlGetLambda));
-    }
-
-    private createDynamoTable() {
-        this.table = new dynamodb.Table(this, 'urls', {
-            partitionKey: {name: 'id', type: dynamodb.AttributeType.STRING},
-            billingMode: BillingMode.PAY_PER_REQUEST,
-            removalPolicy: RemovalPolicy.DESTROY,
-        });
+        apiUrlsResource.addMethod('POST', new LambdaIntegration(urlSaveLambda));
+        apiUrlsResource
+            .addResource('{id}', {
+                defaultCorsPreflightOptions: defaultCors,
+            })
+            .addMethod('GET', new LambdaIntegration(urlGetLambda));
     }
 
     private createFrontendInfrastructure() {

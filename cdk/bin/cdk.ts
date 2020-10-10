@@ -3,31 +3,23 @@ import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
 import {App} from "../lib/App";
 import {Ci} from "../lib/Ci";
-import {Environment} from "@aws-cdk/core";
+import env from "./env";
+import getEnvName from "../lib/util/getEnvName";
 
-const app = new cdk.App();
-const environmentName = process.env.STAGE;
-
-if (!environmentName) {
-    throw new Error('STAGE environment variable parameter not present. Can not deploy');
-}
-
-const env: Environment = {
-    region: 'us-east-1',
-    account: '216987438199',
-};
+const envName = getEnvName();
 
 try {
+    const app = new cdk.App();
     new Ci(app, `snort-ci`, {
         description: 'Snort - CI pipelines',
         env,
     });
 
-    const theAppStack = new App(app, `snort-app-${environmentName}`, {
+    new App(app, `snort-app-${envName}`, {
         description: 'Snort - the app itself',
         env,
     });
 } catch (e) {
-    console.log(e);
+    console.error(e);
     process.exit(1);
 }

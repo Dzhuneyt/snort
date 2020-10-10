@@ -1,5 +1,5 @@
 import {randomBytes} from 'crypto';
-import DynamoDB = require("aws-sdk/clients/dynamodb");
+import {DynamoDB} from "aws-sdk";
 
 const getRandomId = (length: number) => {
     return randomBytes(Math.floor(length / 2)).toString('hex');

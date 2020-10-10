@@ -20,39 +20,54 @@
     "get:backend-url": "./scripts/get-backend-url.sh"
   },
   "devDependencies": {
-    "@aws-cdk/assert": "^1.30.0",
+    "@aws-cdk/assert": "^1.65.0",
     "@types/jest": "^24.9.1",
     "@types/node": "10.17.5",
-    "aws-cdk": "^1.30.0",
+    "aws-cdk": "^1.65.0",
     "jest": "^24.9.0",
+    "parcel": "2.0.0-beta.1",
     "ts-jest": "^24.1.0",
-    "ts-node": "^8.7.0",
+    "ts-node": "^8.10.2",
     "typescript": "~3.7.2"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "^1.30.0",
-    "@aws-cdk/aws-certificatemanager": "^1.30.0",
-    "@aws-cdk/aws-cloudfront": "^1.30.0",
-    "@aws-cdk/aws-codebuild": "^1.30.0",
-    "@aws-cdk/aws-codecommit": "^1.30.0",
-    "@aws-cdk/aws-codedeploy": "^1.30.0",
-    "@aws-cdk/aws-codepipeline-actions": "^1.30.0",
-    "@aws-cdk/aws-dynamodb": "^1.30.0",
-    "@aws-cdk/aws-ec2": "^1.30.0",
-    "@aws-cdk/aws-ecr": "^1.30.0",
-    "@aws-cdk/aws-iam": "^1.30.0",
-    "@aws-cdk/aws-lambda": "^1.30.0",
-    "@aws-cdk/aws-route53": "^1.30.0",
-    "@aws-cdk/aws-route53-targets": "^1.30.0",
-    "@aws-cdk/aws-s3": "^1.30.0",
-    "@aws-cdk/aws-s3-deployment": "^1.30.0",
-    "@aws-cdk/core": "^1.30.0",
+    "@aws-cdk/aws-apigateway": "^1.65.0",
+    "@aws-cdk/aws-certificatemanager": "^1.65.0",
+    "@aws-cdk/aws-cloudfront": "^1.65.0",
+    "@aws-cdk/aws-codebuild": "^1.65.0",
+    "@aws-cdk/aws-codecommit": "^1.65.0",
+    "@aws-cdk/aws-codedeploy": "^1.65.0",
+    "@aws-cdk/aws-codepipeline-actions": "^1.65.0",
+    "@aws-cdk/aws-dynamodb": "^1.65.0",
+    "@aws-cdk/aws-ec2": "^1.65.0",
+    "@aws-cdk/aws-ecr": "^1.65.0",
+    "@aws-cdk/aws-iam": "^1.65.0",
+    "@aws-cdk/aws-lambda": "^1.65.0",
+    "@aws-cdk/aws-lambda-nodejs": "^1.65.0",
+    "@aws-cdk/aws-route53": "^1.65.0",
+    "@aws-cdk/aws-route53-targets": "^1.65.0",
+    "@aws-cdk/aws-s3": "^1.65.0",
+    "@aws-cdk/aws-s3-deployment": "^1.65.0",
+    "@aws-cdk/core": "^1.65.0",
     "@mobileposse/auto-delete-bucket": "1.23.0",
-    "aws-sdk": "^2.643.0",
-    "source-map-support": "^0.5.16",
-    "ts-loader": "^6.2.1",
-    "webpack": "^4.42.0",
-    "webpack-cli": "^3.3.11",
+    "aws-sdk": "^2.765.0",
+    "source-map-support": "^0.5.19",
+    "ts-loader": "^6.2.2",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
     "webpack-node-externals": "^1.7.2"
+  },
+  "targets": {
+    "cdk-lambda": {
+      "context": "node",
+      "includeNodeModules": {
+        "aws-sdk": false
+      },
+      "sourceMap": false,
+      "minify": false,
+      "engines": {
+        "node": ">= 12"
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
-import DynamoDB = require("aws-sdk/clients/dynamodb");
-
 // Create the DynamoDB service object
+import {DynamoDB} from "aws-sdk";
+
 const ddb = new DynamoDB({apiVersion: '2012-08-10'});
 
 export const handler = async (event: any) => {
