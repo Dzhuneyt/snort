@@ -2,9 +2,9 @@ import {Construct, SecretValue, Stack, StackProps} from "@aws-cdk/core";
 import {GitHubTrigger} from "@aws-cdk/aws-codepipeline-actions";
 import {BuildSpec, Cache, LinuxBuildImage, LocalCacheMode, PipelineProject} from "@aws-cdk/aws-codebuild";
 import {Bucket, BucketEncryption} from "@aws-cdk/aws-s3";
+import {PolicyStatement} from "@aws-cdk/aws-iam";
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
-import {PolicyStatement} from "@aws-cdk/aws-iam";
 
 export class Ci extends Stack {
 
@@ -20,28 +20,6 @@ export class Ci extends Stack {
     }
 
     private createCodeBuildActions(environmentName: string) {
-
-        const buildCommands = [
-            'echo Building Lambdas',
-            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run build:lambdas',
-
-
-            // CI Self provision on master branch commits
-            environmentName === 'production' ? 'echo Deploying CI infrastructure' : null,
-            environmentName === 'production' ? 'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci' : null,
-
-            'echo Deploying APP infrastructure',
-            'cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app',
-
-            'export BACKEND_URL=$(cd ${CODEBUILD_SRC_DIR} && npx -q aws-cdk-output --name=backendurl --fromStack=snort-app-${STAGE})',
-            'echo Backend URL is ${BACKEND_URL}',
-
-            'echo Building frontend',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && BACKEND_URL=${BACKEND_URL} npm run ci:replace-env-vars',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod',
-            'cd ${CODEBUILD_SRC_DIR}/frontend && npm run copy-to-s3 ${STAGE}',
-        ].filter(value => value !== null);
-
         const cdkBuild = new PipelineProject(this, `${environmentName}-cdk-build`, {
             buildSpec: BuildSpec.fromSourceFilename('buildspec.yml'),
             environmentVariables: {
@@ -50,9 +28,9 @@ export class Ci extends Stack {
                 }
             },
             environment: {
-                buildImage: LinuxBuildImage.STANDARD_2_0,
+                buildImage: LinuxBuildImage.STANDARD_4_0,
             },
-            cache: Cache.local(LocalCacheMode.SOURCE),
+            cache: Cache.local(LocalCacheMode.SOURCE, LocalCacheMode.CUSTOM),
         });
         cdkBuild.addToRolePolicy(new PolicyStatement({
             actions: ["*"],
@@ -74,7 +52,7 @@ export class Ci extends Stack {
     }
 
     private createPipelines() {
-        const artifactsbucket = new Bucket(this, 'ci-artifacts', {
+        const artifactsBucket = new Bucket(this, 'ci-artifacts', {
             encryption: BucketEncryption.S3_MANAGED,
         });
 
@@ -84,7 +62,7 @@ export class Ci extends Stack {
         const staging = new codepipeline.Pipeline(this, 'staging', {
             pipelineName: 'snort-ci-develop',
             restartExecutionOnUpdate: true,
-            artifactBucket: artifactsbucket,
+            artifactBucket: artifactsBucket,
             stages: [
                 {
                     stageName: 'Source',
@@ -117,7 +95,7 @@ export class Ci extends Stack {
         const production = new codepipeline.Pipeline(this, 'production', {
             pipelineName: 'snort-ci-master',
             restartExecutionOnUpdate: true,
-            artifactBucket: artifactsbucket,
+            artifactBucket: artifactsBucket,
             stages: [
                 {
                     stageName: 'Source',
