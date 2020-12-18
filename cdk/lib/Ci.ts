@@ -1,8 +1,8 @@
 import {Construct, Duration, SecretValue, Stack, StackProps} from "@aws-cdk/core";
 import {GitHubTrigger} from "@aws-cdk/aws-codepipeline-actions";
-import {BuildSpec, Cache, LinuxBuildImage, LocalCacheMode, PipelineProject} from "@aws-cdk/aws-codebuild";
-import {BucketEncryption} from "@aws-cdk/aws-s3";
-import {PolicyStatement} from "@aws-cdk/aws-iam";
+import {BuildSpec, Cache, LinuxBuildImage, PipelineProject} from "@aws-cdk/aws-codebuild";
+import {BucketEncryption, IBucket} from "@aws-cdk/aws-s3";
+import {ManagedPolicy, Role, ServicePrincipal} from "@aws-cdk/aws-iam";
 import {AutoDeleteBucket} from "@mobileposse/auto-delete-bucket";
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
@@ -13,34 +13,39 @@ export class Ci extends Stack {
         sourceOutput: codepipeline.Artifact,
         deploy: codepipeline.Artifact,
     };
+    private readonly role: Role;
+    private readonly cacheBucket: IBucket;
 
     constructor(scope: Construct, id: string, props: StackProps) {
         super(scope, id, props);
         this.artifacts = this.createArtifacts();
+        this.role = new Role(this, 'role', {
+            assumedBy: new ServicePrincipal('codebuild.amazonaws.com'),
+        });
+        this.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'));
+        this.cacheBucket = new AutoDeleteBucket(this, 'cache', {
+            encryption: BucketEncryption.S3_MANAGED,
+            lifecycleRules: [{expiration: Duration.days(3)}],
+        });
         this.createPipelines();
     }
 
-    private createCodeBuildActions(environmentName: string) {
-        const cdkBuild = new PipelineProject(this, `${environmentName}-cdk-build`, {
+    private getCdkDeployAction(environmentName: string) {
+        return new PipelineProject(this, `${environmentName}-cdk-build`, {
             buildSpec: BuildSpec.fromSourceFilename('buildspec.yml'),
+            role: this.role,
             environmentVariables: {
                 STAGE: {
                     value: environmentName,
                 }
             },
             environment: {
-                buildImage: LinuxBuildImage.STANDARD_4_0,
+                buildImage: LinuxBuildImage.AMAZON_LINUX_2_3,
             },
-            cache: Cache.local(LocalCacheMode.SOURCE, LocalCacheMode.CUSTOM),
+            cache: Cache.bucket(this.cacheBucket, {
+                prefix: `${environmentName}-cdk-build`,
+            }),
         });
-        cdkBuild.addToRolePolicy(new PolicyStatement({
-            actions: ["*"],
-            resources: ["*"]
-        }));
-
-        return {
-            cdkBuild: cdkBuild,
-        }
     }
 
     private createArtifacts() {
@@ -48,18 +53,18 @@ export class Ci extends Stack {
         const deploy = new codepipeline.Artifact('deploy');
         return {
             sourceOutput,
-            deploy: deploy
+            deploy,
         };
     }
 
     private createPipelines() {
         const artifactsBucket = new AutoDeleteBucket(this, 'ci-artifacts', {
             encryption: BucketEncryption.S3_MANAGED,
-            lifecycleRules: [{expiration: Duration.days(3),}],
+            lifecycleRules: [{expiration: Duration.days(3)}],
         });
 
-        const actionsStaging = this.createCodeBuildActions('staging');
-        const actionsProduction = this.createCodeBuildActions("production");
+        const cdkDeployStaging = this.getCdkDeployAction('staging');
+        const cdkDeployProd = this.getCdkDeployAction("production");
 
         const staging = new codepipeline.Pipeline(this, 'staging', {
             pipelineName: 'snort-ci-develop',
@@ -85,7 +90,8 @@ export class Ci extends Stack {
                     actions: [
                         new codepipeline_actions.CodeBuildAction({
                             actionName: 'CDK_Deploy',
-                            project: actionsStaging.cdkBuild,
+                            project: cdkDeployStaging,
+                            role: this.role,
                             input: this.artifacts.sourceOutput,
                             outputs: [this.artifacts.deploy],
                         }),
@@ -118,7 +124,8 @@ export class Ci extends Stack {
                     actions: [
                         new codepipeline_actions.CodeBuildAction({
                             actionName: 'Deploy',
-                            project: actionsProduction.cdkBuild,
+                            project: cdkDeployProd,
+                            role: this.role,
                             input: this.artifacts.sourceOutput,
                             outputs: [this.artifacts.deploy],
                         }),
