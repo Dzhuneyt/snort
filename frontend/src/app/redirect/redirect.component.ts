@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, ActivatedRouteSnapshot} from "@angular/router";
-import {map} from "rxjs/operators";
-import {UrlService} from "../url.service";
+import {ActivatedRoute} from '@angular/router';
+import {map} from 'rxjs/operators';
+import {UrlService} from '../url.service';
 
 @Component({
   selector: 'app-redirect',
@@ -17,11 +17,11 @@ export class RedirectComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.params.pipe(map(params => params['id'])).subscribe(value => {
-      this.urlService.longen(value).subscribe(value1 => {
+    this.route.params.pipe(map(params => params.id)).subscribe(value => {
+      this.urlService.expand(value).subscribe(value1 => {
         window.location.href = value1;
       });
-    })
+    });
   }
 
 }

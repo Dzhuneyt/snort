@@ -4,9 +4,9 @@ import * as cdk from '@aws-cdk/core';
 import {App} from "../lib/App";
 import {Ci} from "../lib/Ci";
 import env from "./env";
-import getEnvName from "../lib/util/getEnvName";
+import getStage from "../lib/util/getStage";
 
-const envName = getEnvName();
+const stageName = getStage();
 
 try {
     const app = new cdk.App();
@@ -15,7 +15,7 @@ try {
         env,
     });
 
-    new App(app, `snort-app-${envName}`, {
+    new App(app, `snort-app-${stageName}`, {
         description: 'Snort - the app itself',
         env,
     });

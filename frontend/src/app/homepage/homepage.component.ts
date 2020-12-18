@@ -1,5 +1,4 @@
-import {Component, OnInit} from '@angular/core';
-import {BackendService} from "../backend.service";
+import {Component} from '@angular/core';
 import {UrlService} from "../url.service";
 
 @Component({
@@ -7,19 +6,16 @@ import {UrlService} from "../url.service";
   templateUrl: './homepage.component.html',
   styleUrls: ['./homepage.component.scss']
 })
-export class HomepageComponent implements OnInit {
+export class HomepageComponent {
 
-  public url: string = '';
+  public url = '';
   public shortened = '';
 
   constructor(private urlService: UrlService) {
   }
 
-  ngOnInit() {
-  }
-
   onKeydown($event: KeyboardEvent) {
-    if ($event.key === "Enter") {
+    if ($event.key === 'Enter') {
       console.log($event);
       this.urlService.shorten(this.url).subscribe(res => {
         console.log(res);

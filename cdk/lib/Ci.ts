@@ -1,8 +1,9 @@
-import {Construct, SecretValue, Stack, StackProps} from "@aws-cdk/core";
+import {Construct, Duration, SecretValue, Stack, StackProps} from "@aws-cdk/core";
 import {GitHubTrigger} from "@aws-cdk/aws-codepipeline-actions";
 import {BuildSpec, Cache, LinuxBuildImage, LocalCacheMode, PipelineProject} from "@aws-cdk/aws-codebuild";
-import {Bucket, BucketEncryption} from "@aws-cdk/aws-s3";
+import {BucketEncryption} from "@aws-cdk/aws-s3";
 import {PolicyStatement} from "@aws-cdk/aws-iam";
+import {AutoDeleteBucket} from "@mobileposse/auto-delete-bucket";
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
 
@@ -52,8 +53,9 @@ export class Ci extends Stack {
     }
 
     private createPipelines() {
-        const artifactsBucket = new Bucket(this, 'ci-artifacts', {
+        const artifactsBucket = new AutoDeleteBucket(this, 'ci-artifacts', {
             encryption: BucketEncryption.S3_MANAGED,
+            lifecycleRules: [{expiration: Duration.days(3),}],
         });
 
         const actionsStaging = this.createCodeBuildActions('staging');
@@ -61,18 +63,18 @@ export class Ci extends Stack {
 
         const staging = new codepipeline.Pipeline(this, 'staging', {
             pipelineName: 'snort-ci-develop',
-            restartExecutionOnUpdate: true,
+            restartExecutionOnUpdate: false,
             artifactBucket: artifactsBucket,
             stages: [
                 {
                     stageName: 'Source',
                     actions: [
                         new codepipeline_actions.GitHubSourceAction({
-                            branch: 'develop',
                             actionName: "Source",
                             oauthToken: SecretValue.secretsManager('GITHUB_TOKEN'),
                             owner: 'Dzhuneyt',
                             repo: 'snort',
+                            branch: 'develop',
                             trigger: GitHubTrigger.WEBHOOK,
                             output: this.artifacts.sourceOutput,
                         }),
@@ -94,7 +96,7 @@ export class Ci extends Stack {
 
         const production = new codepipeline.Pipeline(this, 'production', {
             pipelineName: 'snort-ci-master',
-            restartExecutionOnUpdate: true,
+            restartExecutionOnUpdate: false,
             artifactBucket: artifactsBucket,
             stages: [
                 {

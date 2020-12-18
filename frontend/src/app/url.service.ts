@@ -11,17 +11,17 @@ export class UrlService {
   }
 
   shorten(longUrl: string) {
-    return this.http.post('urls', {
+    return this.http.post('api/urls', {
       url: longUrl,
     }).pipe(map((res: any) => {
       const full = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
       return full + '/' + res.id;
-    }))
+    }));
   }
 
-  longen(id: string) {
+  expand(id: string) {
     return this.http.get('urls/' + id, {}).pipe(map((res: any) => {
-      return res['url'];
+      return res.url;
     }));
   }
 }
