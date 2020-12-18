@@ -15,6 +15,4 @@ phases:
       - cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:app
 cache:
   paths:
-    - 'cdk/node_modules/**/*'
-    - 'frontend/node_modules/**/*'
     - '/root/.npm/**/*'
