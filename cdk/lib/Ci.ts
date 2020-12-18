@@ -49,78 +49,57 @@ export class Ci extends Stack {
             lifecycleRules: [{expiration: Duration.days(3)}],
         });
 
-        const cdkDeployStaging = this.getCdkDeployAction('staging');
-        const cdkDeployProd = this.getCdkDeployAction("production");
+        const environments: {
+            name: string,
+            branch: string,
+        }[] = [
+            {
+                name: 'staging',
+                branch: 'develop',
+            },
+            {
+                name: 'production',
+                branch: 'master',
+            }
+        ];
 
-        const staging = new codepipeline.Pipeline(this, 'staging', {
-            pipelineName: 'snort-ci-develop',
-            restartExecutionOnUpdate: false,
-            artifactBucket: artifactsBucket,
-            stages: [
-                {
-                    stageName: 'Source',
-                    actions: [
-                        new codepipeline_actions.GitHubSourceAction({
-                            actionName: "Source",
-                            oauthToken: SecretValue.secretsManager('GITHUB_TOKEN'),
-                            owner: 'Dzhuneyt',
-                            repo: 'snort',
-                            branch: 'develop',
-                            trigger: GitHubTrigger.WEBHOOK,
-                            output: this.artifacts.sourceOutput,
-                        }),
-                    ],
-                },
-                {
-                    stageName: 'Build',
-                    actions: [
-                        new codepipeline_actions.CodeBuildAction({
-                            actionName: 'CDK_Deploy',
-                            project: cdkDeployStaging,
-                            input: this.artifacts.sourceOutput,
-                            outputs: [this.artifacts.deploy],
-                        }),
-                    ],
-                },
-            ],
-        });
-
-        const production = new codepipeline.Pipeline(this, 'production', {
-            pipelineName: 'snort-ci-master',
-            restartExecutionOnUpdate: false,
-            artifactBucket: artifactsBucket,
-            stages: [
-                {
-                    stageName: 'Source',
-                    actions: [
-                        new codepipeline_actions.GitHubSourceAction({
-                            branch: 'master',
-                            actionName: "Source",
-                            oauthToken: SecretValue.secretsManager('GITHUB_TOKEN'),
-                            owner: 'Dzhuneyt',
-                            repo: 'snort',
-                            trigger: GitHubTrigger.WEBHOOK,
-                            output: this.artifacts.sourceOutput,
-                        }),
-                    ],
-                },
-                {
-                    stageName: 'Build',
-                    actions: [
-                        new codepipeline_actions.CodeBuildAction({
-                            actionName: 'Deploy',
-                            project: cdkDeployProd,
-                            input: this.artifacts.sourceOutput,
-                            outputs: [this.artifacts.deploy],
-                        }),
-                    ],
-                },
-            ],
-        });
-
-        return {
-            staging,
-            production,
+        for (let environment of environments) {
+            const sourceOutput = new codepipeline.Artifact();
+            const deployOutput = new codepipeline.Artifact('cdk-deploy');
+            const cdkDeployAction = this.getCdkDeployAction(environment.name);
+            new codepipeline.Pipeline(this, environment.name, {
+                pipelineName: `snort-ci-${environment.branch}`,
+                restartExecutionOnUpdate: false,
+                artifactBucket: artifactsBucket,
+                stages: [
+                    {
+                        stageName: 'Source',
+                        actions: [
+                            new codepipeline_actions.GitHubSourceAction({
+                                actionName: "Source",
+                                oauthToken: SecretValue.secretsManager('GITHUB_TOKEN'),
+                                owner: 'Dzhuneyt',
+                                repo: 'snort',
+                                branch: environment.branch,
+                                trigger: GitHubTrigger.WEBHOOK,
+                                output: sourceOutput,
+                            }),
+                        ],
+                    },
+                    {
+                        stageName: 'Build',
+                        actions: [
+                            new codepipeline_actions.CodeBuildAction({
+                                actionName: 'CDK_Deploy',
+                                project: cdkDeployAction,
+                                input: sourceOutput,
+                                outputs: [deployOutput],
+                            }),
+                        ],
+                    },
+                ],
+            });
         }
+
     }
 }
