@@ -8,15 +8,6 @@ phases:
       - cd ${CODEBUILD_SRC_DIR}/frontend && npm ci --no-audit
   build:
     commands:
-      - echo Building Lambdas
-      - |
-        if [ "$STAGE" == "production" ]; then
-          echo Deploying CI infrastructure
-          cd ${CODEBUILD_SRC_DIR}/cdk && npm run deploy:ci
-        else
-          echo Source is not production
-        fi
-
       - echo Building frontend
       - cd ${CODEBUILD_SRC_DIR}/frontend && npm run build:prod
       -
