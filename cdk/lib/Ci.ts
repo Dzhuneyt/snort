@@ -2,7 +2,7 @@ import {Construct, Duration, SecretValue, Stack, StackProps} from "@aws-cdk/core
 import {GitHubTrigger} from "@aws-cdk/aws-codepipeline-actions";
 import {BuildSpec, Cache, LinuxBuildImage, PipelineProject} from "@aws-cdk/aws-codebuild";
 import {BucketEncryption, IBucket} from "@aws-cdk/aws-s3";
-import {ManagedPolicy, Role, ServicePrincipal} from "@aws-cdk/aws-iam";
+import {AccountPrincipal, ManagedPolicy, Role} from "@aws-cdk/aws-iam";
 import {AutoDeleteBucket} from "@mobileposse/auto-delete-bucket";
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
@@ -20,7 +20,7 @@ export class Ci extends Stack {
         super(scope, id, props);
         this.artifacts = this.createArtifacts();
         this.role = new Role(this, 'role', {
-            assumedBy: new ServicePrincipal('codebuild.amazonaws.com'),
+            assumedBy: new AccountPrincipal(Stack.of(this).account),
         });
         this.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'));
         this.cacheBucket = new AutoDeleteBucket(this, 'cache', {
