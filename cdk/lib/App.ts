@@ -7,6 +7,7 @@ import {BucketAccessControl} from "@aws-cdk/aws-s3";
 import {Certificate} from "@aws-cdk/aws-certificatemanager";
 import {AutoDeleteBucket} from '@mobileposse/auto-delete-bucket';
 import {
+    CloudFrontAllowedCachedMethods,
     CloudFrontAllowedMethods,
     CloudFrontWebDistribution,
     OriginAccessIdentity,
@@ -115,7 +116,7 @@ export class App extends cdk.Stack {
                     errorCode: 404,
                     responsePagePath: '/index.html',
                     responseCode: 200,
-                }
+                },
             ],
             originConfigs: [
                 {
@@ -139,6 +140,11 @@ export class App extends cdk.Stack {
                     },
                     behaviors: [
                         {
+                            cachedMethods: CloudFrontAllowedCachedMethods.GET_HEAD_OPTIONS,
+                            forwardedValues: {
+                                queryString: true,
+                                headers: ['authorization'],
+                            },
                             allowedMethods: CloudFrontAllowedMethods.ALL,
                             pathPattern: '/api/*',
                             maxTtl: Duration.seconds(1),

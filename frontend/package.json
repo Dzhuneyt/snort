@@ -9,7 +9,6 @@
     "build:dev:watch": "ng build --watch --progress",
     "build:prod": "ng build --prod --progress",
     "build:prod:watch": "ng build --prod --watch --progress",
-    "ci:replace-env-vars": "echo DEPRECATED && npx ts-node ./scripts/replace-env-vars.ts",
     "copy-to-s3": "./scripts/copy-to-s3.sh",
     "test": "ng test",
     "lint": "ng lint",

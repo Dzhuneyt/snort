@@ -38,7 +38,7 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
     MatProgressSpinnerModule,
   ],
   providers: [
-    {provide: 'BASE_API_URL', useValue: environment.backend},
+    {provide: 'BASE_API_URL', useValue: String(environment.backend)},
     {
       provide: HTTP_INTERCEPTORS,
       useClass: BackendInterceptor,
