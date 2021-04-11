@@ -18,6 +18,7 @@ import {UrlGet} from "./constructs/UrlGet";
 import {UrlSave} from "./constructs/UrlSave";
 import {BucketDeployment, Source} from "@aws-cdk/aws-s3-deployment";
 import * as path from "path";
+import {NodejsFunction} from "@aws-cdk/aws-lambda-nodejs";
 
 export interface Props extends StackProps {
 }
@@ -67,8 +68,10 @@ export class App extends cdk.Stack {
 
         this.api.root.addMethod('ANY');
 
-        const apiUrlsResource = this.api.root
-            .addResource('api')
+        const apiResource = this.api.root
+            .addResource('api');
+
+        const apiUrlsResource = apiResource
             .addResource('urls', {
                 defaultCorsPreflightOptions,
             });
@@ -78,6 +81,18 @@ export class App extends cdk.Stack {
                 defaultCorsPreflightOptions,
             })
             .addMethod('GET', new LambdaIntegration(urlGetLambda));
+
+        const lambdaForUrlRedirect = new NodejsFunction(this, 'NodejsFunction-redirect-to-url', {
+            entry: path.resolve(__dirname, './constructs/redirect.handler.ts'),
+        });
+        this.table.grantReadData(lambdaForUrlRedirect);
+        lambdaForUrlRedirect.addEnvironment('TABLE_NAME', this.table.tableName);
+        apiResource
+            .addResource('go')
+            .addResource('{id}')
+            .addMethod(
+                'GET',
+                new LambdaIntegration(lambdaForUrlRedirect))
     }
 
     private createFrontendInfrastructure() {
@@ -98,8 +113,8 @@ export class App extends cdk.Stack {
             exportName: 'frontend-bucket-' + this.envName
         });
 
-        const certificate = this.envName === 'production'
-            ? Certificate.fromCertificateArn(this, 'certificate', 'arn:aws:acm:us-east-1:216987438199:certificate/3913de84-07ea-4d66-a4c0-0918d03e1cc3')
+        const certificate = this.envName === 'master'
+            ? Certificate.fromCertificateArn(this, 'certificate', 'arn:aws:acm:us-east-1:108908882140:certificate/9ebd314e-25ae-439e-bb18-fe37f343135e')
             : undefined;
 
         const originAccessIdentity = new OriginAccessIdentity(this, 'oai', {});
@@ -149,7 +164,25 @@ export class App extends cdk.Stack {
                             pathPattern: '/api/*',
                             maxTtl: Duration.seconds(1),
                             defaultTtl: Duration.seconds(1),
-                        }
+                        },
+                    ]
+                },
+                {
+                    customOriginSource: {
+                        domainName: this.api.url.split("/")[2],
+                        originPath: '/prod/api',
+                    },
+                    behaviors: [
+                        {
+                            cachedMethods: CloudFrontAllowedCachedMethods.GET_HEAD_OPTIONS,
+                            forwardedValues: {
+                                queryString: true,
+                            },
+                            allowedMethods: CloudFrontAllowedMethods.ALL,
+                            pathPattern: '/go/*',
+                            maxTtl: Duration.seconds(1),
+                            defaultTtl: Duration.seconds(1),
+                        },
                     ]
                 }
             ]

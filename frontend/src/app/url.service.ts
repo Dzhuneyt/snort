@@ -14,8 +14,8 @@ export class UrlService {
     return this.http.post('api/urls', {
       url: longUrl,
     }).pipe(map((res: any) => {
-      const full = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
-      return full + '/' + res.id;
+      const baseUrl = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
+      return baseUrl + '/go/' + res.id;
     }));
   }
 
