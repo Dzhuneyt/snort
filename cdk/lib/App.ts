@@ -170,14 +170,13 @@ export class App extends cdk.Stack {
                 {
                     customOriginSource: {
                         domainName: this.api.url.split("/")[2],
-                        originPath: '/prod/api/go',
+                        originPath: '/prod/api',
                     },
                     behaviors: [
                         {
                             cachedMethods: CloudFrontAllowedCachedMethods.GET_HEAD_OPTIONS,
                             forwardedValues: {
                                 queryString: true,
-                                headers: ['authorization'],
                             },
                             allowedMethods: CloudFrontAllowedMethods.ALL,
                             pathPattern: '/go/*',
