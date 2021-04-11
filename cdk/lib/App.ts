@@ -86,6 +86,7 @@ export class App extends cdk.Stack {
             entry: path.resolve(__dirname, './constructs/redirect.handler.ts'),
         });
         this.table.grantReadData(lambdaForUrlRedirect);
+        lambdaForUrlRedirect.addEnvironment('TABLE_NAME', this.table.tableName);
         apiResource
             .addResource('go')
             .addResource('{id}')
