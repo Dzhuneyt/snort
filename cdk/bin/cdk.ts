@@ -10,8 +10,10 @@ const stageName = getStage();
 
 try {
     const app = new cdk.App();
-    new Ci(app, `snort-ci`, {
-        description: 'Snort - CI pipelines',
+
+    const branch = app.node.tryGetContext('branch');
+    new Ci(app, `snort-ci-${branch}`, {
+        description: `Snort - CI pipeline for branch ${branch}`,
         env,
     });
 

@@ -1,4 +1,4 @@
-import {Construct, Duration, SecretValue, Stack, StackProps} from "@aws-cdk/core";
+import {Annotations, Construct, Duration, SecretValue, Stack, StackProps} from "@aws-cdk/core";
 import {GitHubTrigger} from "@aws-cdk/aws-codepipeline-actions";
 import {BuildSpec, Cache, LinuxBuildImage, PipelineProject} from "@aws-cdk/aws-codebuild";
 import {BucketEncryption, IBucket} from "@aws-cdk/aws-s3";
@@ -9,19 +9,25 @@ import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
 
 export class Ci extends Stack {
 
-    private artifacts = {
-        sourceOutput: new codepipeline.Artifact(),
-        deploy: new codepipeline.Artifact('deploy'),
-    };
     private readonly cacheBucket: IBucket;
+    private readonly branch: string;
 
     constructor(scope: Construct, id: string, props: StackProps) {
         super(scope, id, props);
+
+        this.branch = this.node.tryGetContext('branch');
+
+        if (!this.branch) {
+            Annotations.of(this).addError('Context value with name "branch" is required to deploy the CI stack');
+            return;
+        }
+
         this.cacheBucket = new AutoDeleteBucket(this, 'cache', {
             encryption: BucketEncryption.S3_MANAGED,
             lifecycleRules: [{expiration: Duration.days(3)}],
         });
-        this.createPipelines();
+
+        this.createPipeline();
     }
 
     private getCdkDeployAction(environmentName: string) {
@@ -43,63 +49,42 @@ export class Ci extends Stack {
         return project;
     }
 
-    private createPipelines() {
-        const artifactsBucket = new AutoDeleteBucket(this, 'ci-artifacts', {
-            encryption: BucketEncryption.S3_MANAGED,
-            lifecycleRules: [{expiration: Duration.days(3)}],
+    private createPipeline() {
+        const sourceOutput = new codepipeline.Artifact();
+        const deployOutput = new codepipeline.Artifact('cdk-deploy');
+        const cdkDeployAction = this.getCdkDeployAction(this.branch);
+        new codepipeline.Pipeline(this, this.branch, {
+            pipelineName: `snort-ci-${this.branch}`,
+            restartExecutionOnUpdate: false,
+            artifactBucket: this.cacheBucket,
+            stages: [
+                {
+                    stageName: 'Source',
+                    actions: [
+                        new codepipeline_actions.GitHubSourceAction({
+                            actionName: "Source",
+                            oauthToken: SecretValue.secretsManager('GITHUB_TOKEN'),
+                            owner: 'Dzhuneyt',
+                            repo: 'snort',
+                            branch: this.branch,
+                            trigger: GitHubTrigger.WEBHOOK,
+                            output: sourceOutput,
+                        }),
+                    ],
+                },
+                {
+                    stageName: 'Build',
+                    actions: [
+                        new codepipeline_actions.CodeBuildAction({
+                            actionName: 'CDK_Deploy',
+                            project: cdkDeployAction,
+                            input: sourceOutput,
+                            outputs: [deployOutput],
+                        }),
+                    ],
+                },
+            ],
         });
-
-        const environments: {
-            name: string,
-            branch: string,
-        }[] = [
-            {
-                name: 'staging',
-                branch: 'develop',
-            },
-            {
-                name: 'production',
-                branch: 'master',
-            }
-        ];
-
-        for (let environment of environments) {
-            const sourceOutput = new codepipeline.Artifact();
-            const deployOutput = new codepipeline.Artifact('cdk-deploy');
-            const cdkDeployAction = this.getCdkDeployAction(environment.name);
-            new codepipeline.Pipeline(this, environment.name, {
-                pipelineName: `snort-ci-${environment.branch}`,
-                restartExecutionOnUpdate: false,
-                artifactBucket: artifactsBucket,
-                stages: [
-                    {
-                        stageName: 'Source',
-                        actions: [
-                            new codepipeline_actions.GitHubSourceAction({
-                                actionName: "Source",
-                                oauthToken: SecretValue.secretsManager('GITHUB_TOKEN'),
-                                owner: 'Dzhuneyt',
-                                repo: 'snort',
-                                branch: environment.branch,
-                                trigger: GitHubTrigger.WEBHOOK,
-                                output: sourceOutput,
-                            }),
-                        ],
-                    },
-                    {
-                        stageName: 'Build',
-                        actions: [
-                            new codepipeline_actions.CodeBuildAction({
-                                actionName: 'CDK_Deploy',
-                                project: cdkDeployAction,
-                                input: sourceOutput,
-                                outputs: [deployOutput],
-                            }),
-                        ],
-                    },
-                ],
-            });
-        }
 
     }
 }
