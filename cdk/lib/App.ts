@@ -98,8 +98,8 @@ export class App extends cdk.Stack {
             exportName: 'frontend-bucket-' + this.envName
         });
 
-        const certificate = this.envName === 'production'
-            ? Certificate.fromCertificateArn(this, 'certificate', 'arn:aws:acm:us-east-1:216987438199:certificate/3913de84-07ea-4d66-a4c0-0918d03e1cc3')
+        const certificate = this.envName === 'master'
+            ? Certificate.fromCertificateArn(this, 'certificate', 'arn:aws:acm:us-east-1:108908882140:certificate/9ebd314e-25ae-439e-bb18-fe37f343135e')
             : undefined;
 
         const originAccessIdentity = new OriginAccessIdentity(this, 'oai', {});
